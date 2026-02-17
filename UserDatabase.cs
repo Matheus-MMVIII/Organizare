@@ -30,7 +30,8 @@ public static class UserDatabase
             name = name,
             number = number,
             birthDate = birthDate,
-            email = email
+            email = email,
+            isActive = true
         };
 
         users.Add(user);
@@ -40,6 +41,16 @@ public static class UserDatabase
     }
 
     public static bool Remove(int id)
+    {
+        var user = users.FirstOrDefault(u => u.id == id);
+        if (user == null) return false;
+
+        user.isActive = false;
+        Save();
+        return true;
+    }
+
+    public static bool Delete(int id)
     {
         var user = users.FirstOrDefault(u => u.id == id);
         if (user == null) return false;
@@ -98,7 +109,7 @@ public static class UserDatabase
         return new List<User>(users);
     }
 
-    private static void Save()
+    private static void Save()// A um limite de usuario para ser salvo, por isso, se for necessário salvar muitos usuarios, é recomendado usar um banco de dados ou dividir os arquivos em partes menores.
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
@@ -106,7 +117,7 @@ public static class UserDatabase
 
         //string encrypted = Encrypt(json);
 
-        File.WriteAllText(path, json, Encoding.UTF8);
+        File.WriteAllText(path, json, Encoding.UTF8);// Com o modo que estou usando, o arquivo é salvo sem criptografia. Para usar a criptografia, substitua 'json' por 'encrypted' e descomente as linhas relacionadas à criptografia.
     }
 
     private static void Load()

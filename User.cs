@@ -7,6 +7,7 @@ public class User
     public string? number { get; set; }
     public DateTime birthDate { get; set; }
     public string? email { get; set; }
+    public bool isActive { get; set; } = true;
 
     public int GetAge()
     {
