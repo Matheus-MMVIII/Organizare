@@ -22,6 +22,8 @@ public class Program
             "lorena@email.com"
         );
 
+        PurchaseRecord.Add(1, "Roupa P", 89.90m);
+
         //Console.WriteLine("Criado ID: " + u1.id);
 
         // FIND
