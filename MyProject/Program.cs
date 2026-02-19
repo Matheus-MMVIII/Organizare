@@ -6,6 +6,7 @@ public class Program
 {
     static void Main()
     {
+        PurchaseRecord.Load();
 
         // ADD
         UserDatabase.Add(

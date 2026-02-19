@@ -10,7 +10,7 @@ using System.Globalization;
 public static class UserDatabase
 {
     private static List<User> users = new List<User>();
-    private static string path =
+    private static readonly string path =
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "MyApp",

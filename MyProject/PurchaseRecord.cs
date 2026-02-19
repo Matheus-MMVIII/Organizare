@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
+using System.IO;
 
 
 public static class PurchaseRecord
 {
-    private static List<Purchase> purchases = new List<Purchase>();
-    private static string path =
+    private static List<Purchase> purchases = new();
+    private static readonly string path =
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "MyApp",
@@ -38,14 +39,34 @@ public static class PurchaseRecord
 
     public static List<Purchase> GetAll()
     {
-        return purchases;
+        return purchases.ToList();
     }
 
     public static void Save()
     {
-        string json = JsonSerializer.Serialize(purchases);
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
-        File.WriteAllText(path, json);
+        var dir = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+    
+        string json = JsonSerializer.Serialize(purchases, new JsonSerializerOptions { WriteIndented = true });
+
+        File.WriteAllText(path, json, Encoding.UTF8);
+    }
+
+    public static void Load()
+    {
+        Console.WriteLine(path);
+        if (!File.Exists(path))
+        {
+            purchases = new List<Purchase>();
+            return;
+        }
+
+        string json = File.ReadAllText(path, Encoding.UTF8);
+
+        purchases = JsonSerializer.Deserialize<List<Purchase>>(json) ?? new List<Purchase>();
     }
 
 }
