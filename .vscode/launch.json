@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run App",
+      "request": "launch",
+      "mainClass": "App",
+      "env": {
+        "DB_URL": "jdbc:postgresql://localhost:5433/organizare",
+        "DB_USER": "postgres",
+        "DB_PASSWORD": "99146632"
+      }
+    }
+  ]
+}
