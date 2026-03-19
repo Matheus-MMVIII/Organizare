@@ -1,4 +1,5 @@
-public class Product {
+
+public abstract class Product {
     private int id;
     private String name;
     private double price;
