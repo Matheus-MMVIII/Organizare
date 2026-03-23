@@ -2,52 +2,95 @@ package com.organizare.repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import com.organizare.model.Clothing;
 
 public class ClothingRepository {
-    public void insert(Connection connection, Clothing clothing) throws SQLException {
+    public Clothing insert(Connection connection, Clothing clothing) throws SQLException {
         String sql = "INSERT INTO clothing (name, price, stock, size, color) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, clothing.getName());
             statement.setDouble(2, clothing.getPrice());
             statement.setInt(3, clothing.getStock());
             statement.setString(4, clothing.getSize());
             statement.setString(5, clothing.getColor());
             statement.executeUpdate();
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return new Clothing(
+                            generatedKeys.getInt(1),
+                            clothing.getName(),
+                            clothing.getPrice(),
+                            clothing.getStock(),
+                            clothing.getSize(),
+                            clothing.getColor());
+                }
+            }
         }
+        throw new SQLException("Falha ao gerar o identificador da roupa.");
     }
 
-    public void readById(Connection connection, int clothingId) throws SQLException {
+    public Optional<Clothing> findById(Connection connection, int clothingId) throws SQLException {
         String sql = "SELECT * FROM clothing WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, clothingId);
-            statement.executeQuery();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapRow(resultSet));
+                }
+                return Optional.empty();
+            }
         }
     }
 
-    public void updatePrice(Connection connection, int clothingId, double newPrice) throws SQLException {
-        String sql = "UPDATE clothing SET price = ? WHERE id = ?";
+    public Clothing update(Connection connection, Clothing clothing) throws SQLException {
+        String sql = "UPDATE clothing SET name = ?, price = ?, stock = ?, size = ?, color = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setDouble(1, newPrice);
-            statement.setInt(2, clothingId);
+            statement.setString(1, clothing.getName());
+            statement.setDouble(2, clothing.getPrice());
+            statement.setInt(3, clothing.getStock());
+            statement.setString(4, clothing.getSize());
+            statement.setString(5, clothing.getColor());
+            statement.setInt(6, clothing.getId());
             statement.executeUpdate();
         }
+        return clothing;
     }
 
-    public void delete(Connection connection, int clothingId) throws SQLException {
+    public boolean delete(Connection connection, int clothingId) throws SQLException {
         String sql = "DELETE FROM clothing WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, clothingId);
-            statement.executeUpdate();
+            return statement.executeUpdate() > 0;
         }
     }
 
-    public void listAll(Connection connection) throws SQLException {
-        String sql = "SELECT * FROM clothing";
+    public List<Clothing> listAll(Connection connection) throws SQLException {
+        String sql = "SELECT * FROM clothing ORDER BY id";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.executeQuery();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Clothing> clothingItems = new ArrayList<>();
+                while (resultSet.next()) {
+                    clothingItems.add(mapRow(resultSet));
+                }
+                return clothingItems;
+            }
         }
+    }
+
+    private Clothing mapRow(ResultSet resultSet) throws SQLException {
+        return new Clothing(
+                resultSet.getInt("id"),
+                resultSet.getString("name"),
+                resultSet.getDouble("price"),
+                resultSet.getInt("stock"),
+                resultSet.getString("size"),
+                resultSet.getString("color"));
     }
 }

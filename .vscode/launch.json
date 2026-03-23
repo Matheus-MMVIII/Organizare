@@ -5,7 +5,7 @@
       "type": "java",
       "name": "Run App",
       "request": "launch",
-      "mainClass": "App",
+      "mainClass": "com.organizare.App",
       "env": {
         "DB_URL": "jdbc:postgresql://localhost:5433/organizare",
         "DB_USER": "postgres",

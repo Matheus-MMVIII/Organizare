@@ -16,7 +16,7 @@ public final class DatabaseConfig {
     }
 
     private static String requireEnv(String key) {
-        String value = System.getenv(key);
+        String value = EnvConfig.get(key);
         if (value == null || value.isBlank()) {
             throw new IllegalStateException("Variavel de ambiente ausente: " + key);
         }
