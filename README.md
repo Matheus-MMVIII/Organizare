@@ -1,18 +1,26 @@
-## Getting Started
+## Organizare
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+Projeto Java com foco em cadastro de usuarios e produtos de roupa com persistencia em PostgreSQL.
 
-## Folder Structure
+## Estrutura
 
-The workspace contains two folders by default, where:
+- `src/main/java/com/organizare/App.java`: ponto de entrada da aplicacao
+- `src/main/java/com/organizare/config`: configuracao de conexao com o banco
+- `src/main/java/com/organizare/model`: entidades de dominio
+- `src/main/java/com/organizare/repository`: acesso a dados por entidade
+- `lib/postgresql-42.7.3.jar`: driver JDBC do PostgreSQL
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+## Variaveis de ambiente
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+Configure antes de rodar a aplicacao:
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+- `DB_URL`
+- `DB_USER`
+- `DB_PASSWORD`
 
-## Dependency Management
+## Melhorias aplicadas
 
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+- separacao por responsabilidade
+- nomes de classes mais consistentes
+- `package` alinhado com a estrutura de pastas
+- fechamento seguro de conexoes e statements com `try-with-resources`
