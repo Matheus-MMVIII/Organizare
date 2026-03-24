@@ -14,16 +14,19 @@ import com.organizare.validation.RequestValidator;
 public class ClothingService {
     private final ClothingRepository clothingRepository;
 
+    // Recebe o repositorio usado para acessar e persistir dados de roupas.
     public ClothingService(ClothingRepository clothingRepository) {
         this.clothingRepository = clothingRepository;
     }
 
+    // Lista todas as roupas cadastradas abrindo e fechando a conexao automaticamente.
     public List<Clothing> listAll() throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
             return clothingRepository.listAll(connection);
         }
     }
 
+    // Busca uma roupa pelo ID e gera erro 404 quando ela nao existe.
     public Clothing findById(int id) throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
             return clothingRepository.findById(connection, id)
@@ -31,6 +34,7 @@ public class ClothingService {
         }
     }
 
+    // Valida os dados recebidos e cria uma nova peca de roupa no banco.
     public Clothing create(Map<String, String> payload) throws SQLException {
         String name = RequestValidator.requireText(payload, "name", 2, 100);
         double price = RequestValidator.requireDecimal(payload, "price", 0.0, 1000000.0);
@@ -43,6 +47,7 @@ public class ClothingService {
         }
     }
 
+    // Valida os dados recebidos, verifica existencia do registro e atualiza a roupa.
     public Clothing update(int id, Map<String, String> payload) throws SQLException {
         String name = RequestValidator.requireText(payload, "name", 2, 100);
         double price = RequestValidator.requireDecimal(payload, "price", 0.0, 1000000.0);
@@ -58,6 +63,7 @@ public class ClothingService {
         }
     }
 
+    // Remove uma roupa pelo ID e falha com 404 quando o registro nao existe.
     public void delete(int id) throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
             boolean deleted = clothingRepository.delete(connection, id);

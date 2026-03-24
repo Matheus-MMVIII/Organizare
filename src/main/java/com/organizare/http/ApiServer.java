@@ -19,6 +19,7 @@ public class ApiServer {
     private final HttpServer server;
     private final ExecutorService executor;
 
+    // Configura o servidor HTTP, a pool de threads, as rotas e o desligamento controlado.
     public ApiServer() throws IOException {
         this.server = HttpServer.create(new InetSocketAddress(AppConfig.getPort()), AppConfig.getBacklog());
         this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -27,16 +28,19 @@ public class ApiServer {
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     }
 
+    // Inicia o servidor e registra no console a porta utilizada.
     public void start() {
         server.start();
         System.out.println("Servidor iniciado na porta " + AppConfig.getPort());
     }
 
+    // Encerra o servidor HTTP e libera a pool de threads usada para processar requisicoes.
     public void stop() {
         server.stop(0);
         executor.shutdown();
     }
 
+    // Cria as dependencias principais e associa cada rota ao seu respectivo handler.
     private void registerContexts() {
         UserService userService = new UserService(new UserRepository());
         ClothingService clothingService = new ClothingService(new ClothingRepository());

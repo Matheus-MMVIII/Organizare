@@ -14,10 +14,12 @@ public class ClothingHandler extends BaseHandler {
 
     private final ClothingService clothingService;
 
+    // Recebe o service responsavel pelas regras de negocio relacionadas a roupas.
     public ClothingHandler(ClothingService clothingService) {
         this.clothingService = clothingService;
     }
 
+    // Direciona cada requisicao de roupa para a operacao correta com base no metodo HTTP e na URL.
     @Override
     protected void handleRequest(HttpExchange exchange) throws Exception {
         String method = exchange.getRequestMethod();

@@ -18,16 +18,19 @@ import com.organizare.validation.RequestValidator;
 public class UserService {
     private final UserRepository userRepository;
 
+    // Recebe o repositorio usado para acessar e persistir dados de usuarios.
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
+    // Lista todos os usuarios cadastrados abrindo e fechando a conexao automaticamente.
     public List<User> listAll() throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
             return userRepository.listAll(connection);
         }
     }
 
+    // Busca um usuario pelo ID e gera erro 404 quando ele nao existe.
     public User findById(int id) throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
             return userRepository.findById(connection, id)
@@ -35,6 +38,7 @@ public class UserService {
         }
     }
 
+    // Valida os dados recebidos, garante unicidade do email e cria um novo usuario.
     public User create(Map<String, String> payload) throws SQLException {
         String name = RequestValidator.requireText(payload, "name", 2, 100);
         String email = RequestValidator.requireEmail(payload, "email");
@@ -49,6 +53,7 @@ public class UserService {
         }
     }
 
+    // Valida os dados recebidos, verifica existencia do usuario e atualiza seu cadastro.
     public User update(int id, Map<String, String> payload) throws SQLException {
         String name = RequestValidator.requireText(payload, "name", 2, 100);
         String email = RequestValidator.requireEmail(payload, "email");
@@ -66,6 +71,7 @@ public class UserService {
         }
     }
 
+    // Remove um usuario pelo ID e falha com 404 quando o registro nao existe.
     public void delete(int id) throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
             boolean deleted = userRepository.delete(connection, id);
@@ -75,6 +81,7 @@ public class UserService {
         }
     }
 
+    // Garante que nenhum outro usuario use o mesmo email antes de salvar a alteracao.
     private void ensureEmailIsUnique(Connection connection, String email, Integer currentUserId) throws SQLException {
         userRepository.findByEmail(connection, email).ifPresent(existingUser -> {
             if (currentUserId == null || existingUser.getId() != currentUserId.intValue()) {
@@ -83,6 +90,7 @@ public class UserService {
         });
     }
 
+    // Valida se a combinacao de mes e dia forma uma data de aniversario possivel.
     private void validateBirthDate(int birthMonth, int birthDay) {
         try {
             MonthDay.of(birthMonth, birthDay);

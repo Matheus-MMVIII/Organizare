@@ -11,9 +11,11 @@ import java.util.Map;
 public final class EnvConfig {
     private static final Map<String, String> FILE_VALUES = loadEnvFile();
 
+    // Impede a instanciacao da classe utilitaria de leitura de ambiente.
     private EnvConfig() {
     }
 
+    // Retorna o valor de uma configuracao, priorizando variaveis de ambiente e depois o arquivo .env.
     public static String get(String key) {
         String envValue = System.getenv(key);
         if (envValue != null && !envValue.isBlank()) {
@@ -22,6 +24,7 @@ public final class EnvConfig {
         return FILE_VALUES.get(key);
     }
 
+    // Carrega o arquivo .env uma unica vez e transforma seu conteudo em mapa imutavel.
     private static Map<String, String> loadEnvFile() {
         Path envPath = Path.of(".env");
         if (!Files.exists(envPath)) {
@@ -40,6 +43,7 @@ public final class EnvConfig {
         return Map.copyOf(values);
     }
 
+    // Interpreta uma linha do .env e adiciona a chave e o valor ao mapa quando a sintaxe for valida.
     private static void parseLine(Map<String, String> values, String line) {
         String trimmedLine = line.trim();
         if (trimmedLine.isEmpty() || trimmedLine.startsWith("#")) {
@@ -60,6 +64,7 @@ public final class EnvConfig {
         values.put(key, stripQuotes(rawValue));
     }
 
+    // Remove aspas simples ou duplas que envolvem completamente o valor lido.
     private static String stripQuotes(String value) {
         if (value.length() >= 2) {
             char first = value.charAt(0);

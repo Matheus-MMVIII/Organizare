@@ -9,9 +9,11 @@ public final class RequestValidator {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^[0-9+()\\-\\s]{8,20}$");
 
+    // Impede a instanciacao da classe utilitaria de validacao de payloads.
     private RequestValidator() {
     }
 
+    // Exige um campo textual obrigatorio e valida seu tamanho minimo e maximo.
     public static String requireText(Map<String, String> payload, String field, int minLength, int maxLength) {
         String value = payload.get(field);
         if (value == null) {
@@ -25,6 +27,7 @@ public final class RequestValidator {
         return trimmedValue;
     }
 
+    // Exige um email valido, normaliza para minusculas e retorna o valor pronto para persistencia.
     public static String requireEmail(Map<String, String> payload, String field) {
         String email = requireText(payload, field, 5, 120);
         if (!EMAIL_PATTERN.matcher(email).matches()) {
@@ -33,6 +36,7 @@ public final class RequestValidator {
         return email.toLowerCase();
     }
 
+    // Exige um telefone valido dentro do padrao permitido pela aplicacao.
     public static String requirePhone(Map<String, String> payload, String field) {
         String phone = requireText(payload, field, 8, 20);
         if (!PHONE_PATTERN.matcher(phone).matches()) {
@@ -41,6 +45,7 @@ public final class RequestValidator {
         return phone;
     }
 
+    // Exige um numero inteiro dentro do intervalo aceito para o campo informado.
     public static int requireInt(Map<String, String> payload, String field, int minValue, int maxValue) {
         String rawValue = payload.get(field);
         if (rawValue == null) {
@@ -58,6 +63,7 @@ public final class RequestValidator {
         }
     }
 
+    // Exige um numero decimal dentro do intervalo aceito para o campo informado.
     public static double requireDecimal(Map<String, String> payload, String field, double minValue, double maxValue) {
         String rawValue = payload.get(field);
         if (rawValue == null) {

@@ -5,9 +5,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public final class DatabaseConfig {
+    // Impede a instanciacao da classe utilitaria de acesso ao banco.
     private DatabaseConfig() {
     }
 
+    // Cria e retorna uma nova conexao JDBC usando as variaveis de ambiente obrigatorias.
     public static Connection getConnection() throws SQLException {
         String url = requireEnv("DB_URL");
         String user = requireEnv("DB_USER");
@@ -15,6 +17,7 @@ public final class DatabaseConfig {
         return DriverManager.getConnection(url, user, password);
     }
 
+    // Busca uma variavel obrigatoria e falha explicitamente quando ela nao existe.
     private static String requireEnv(String key) {
         String value = EnvConfig.get(key);
         if (value == null || value.isBlank()) {

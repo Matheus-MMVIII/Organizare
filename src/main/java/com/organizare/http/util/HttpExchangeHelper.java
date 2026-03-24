@@ -12,9 +12,11 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
 public final class HttpExchangeHelper {
+    // Impede a instanciacao da classe utilitaria de manipulacao HTTP.
     private HttpExchangeHelper() {
     }
 
+    // Aplica headers padrao de resposta, incluindo CORS, seguranca e politicas de cache.
     public static void applyDefaultHeaders(HttpExchange exchange) {
         Headers headers = exchange.getResponseHeaders();
         headers.set("Content-Type", "application/json; charset=utf-8");
@@ -27,6 +29,7 @@ public final class HttpExchangeHelper {
         headers.set("Cache-Control", "no-store");
     }
 
+    // Le o corpo da requisicao respeitando o limite maximo configurado para evitar abusos.
     public static String readRequestBody(HttpExchange exchange) throws IOException {
         int maxBytes = AppConfig.getMaxRequestBodyBytes();
         try (InputStream inputStream = exchange.getRequestBody();
@@ -47,6 +50,7 @@ public final class HttpExchangeHelper {
         }
     }
 
+    // Envia uma resposta JSON com o status informado e o corpo serializado em UTF-8.
     public static void sendJson(HttpExchange exchange, int statusCode, String json) throws IOException {
         byte[] responseBytes = json.getBytes(StandardCharsets.UTF_8);
         exchange.sendResponseHeaders(statusCode, responseBytes.length);
@@ -55,10 +59,12 @@ public final class HttpExchangeHelper {
         }
     }
 
+    // Envia uma resposta sem corpo, usada normalmente para operacoes que nao retornam conteudo.
     public static void sendNoContent(HttpExchange exchange) throws IOException {
         exchange.sendResponseHeaders(204, -1);
     }
 
+    // Retorna erro 405 e informa explicitamente quais metodos a rota aceita.
     public static void sendMethodNotAllowed(HttpExchange exchange, String allowedMethods) throws IOException {
         exchange.getResponseHeaders().set("Allow", allowedMethods);
         sendJson(exchange, 405, JsonUtil.error("Metodo nao permitido."));

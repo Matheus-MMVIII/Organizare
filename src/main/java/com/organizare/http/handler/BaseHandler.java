@@ -12,6 +12,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 public abstract class BaseHandler implements HttpHandler {
+    // Aplica o comportamento padrao de todos os handlers, incluindo headers e tratamento centralizado de erros.
     @Override
     public final void handle(HttpExchange exchange) throws IOException {
         HttpExchangeHelper.applyDefaultHeaders(exchange);
@@ -36,8 +37,10 @@ public abstract class BaseHandler implements HttpHandler {
         }
     }
 
+    // Define o ponto de extensao onde cada handler concreto implementa sua propria regra de roteamento.
     protected abstract void handleRequest(HttpExchange exchange) throws Exception;
 
+    // Garante que o corpo da requisicao seja JSON e devolve seu conteudo bruto para processamento.
     protected String requireJsonBody(HttpExchange exchange) throws IOException {
         String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
         if (contentType == null || !contentType.toLowerCase(Locale.ROOT).contains("application/json")) {
@@ -46,6 +49,7 @@ public abstract class BaseHandler implements HttpHandler {
         return HttpExchangeHelper.readRequestBody(exchange);
     }
 
+    // Extrai o identificador numerico da URL quando a rota representa um recurso especifico.
     protected int extractIdFromPath(HttpExchange exchange, String basePath) {
         String path = exchange.getRequestURI().getPath();
         if (path.equals(basePath) || path.equals(basePath + "/")) {

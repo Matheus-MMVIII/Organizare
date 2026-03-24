@@ -12,6 +12,7 @@ import java.util.Optional;
 import com.organizare.model.Clothing;
 
 public class ClothingRepository {
+    // Insere uma nova roupa no banco e devolve a entidade com o ID gerado.
     public Clothing insert(Connection connection, Clothing clothing) throws SQLException {
         String sql = "INSERT INTO clothing (name, price, stock, size, color) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -36,6 +37,7 @@ public class ClothingRepository {
         throw new SQLException("Falha ao gerar o identificador da roupa.");
     }
 
+    // Busca uma roupa pelo ID e retorna Optional para tratar ausencia de resultado.
     public Optional<Clothing> findById(Connection connection, int clothingId) throws SQLException {
         String sql = "SELECT * FROM clothing WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -49,6 +51,7 @@ public class ClothingRepository {
         }
     }
 
+    // Atualiza os dados de uma roupa existente e retorna a propria entidade atualizada.
     public Clothing update(Connection connection, Clothing clothing) throws SQLException {
         String sql = "UPDATE clothing SET name = ?, price = ?, stock = ?, size = ?, color = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -63,6 +66,7 @@ public class ClothingRepository {
         return clothing;
     }
 
+    // Remove uma roupa pelo ID e informa se alguma linha foi realmente excluida.
     public boolean delete(Connection connection, int clothingId) throws SQLException {
         String sql = "DELETE FROM clothing WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -71,6 +75,7 @@ public class ClothingRepository {
         }
     }
 
+    // Lista todas as roupas cadastradas em ordem crescente de identificador.
     public List<Clothing> listAll(Connection connection) throws SQLException {
         String sql = "SELECT * FROM clothing ORDER BY id";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -84,6 +89,7 @@ public class ClothingRepository {
         }
     }
 
+    // Converte uma linha retornada pelo banco em um objeto Clothing da aplicacao.
     private Clothing mapRow(ResultSet resultSet) throws SQLException {
         return new Clothing(
                 resultSet.getInt("id"),

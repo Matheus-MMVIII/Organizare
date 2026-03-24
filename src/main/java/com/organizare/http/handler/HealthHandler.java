@@ -5,6 +5,7 @@ import com.organizare.http.util.JsonUtil;
 import com.sun.net.httpserver.HttpExchange;
 
 public class HealthHandler extends BaseHandler {
+    // Responde ao endpoint de saude informando se a API esta ativa.
     @Override
     protected void handleRequest(HttpExchange exchange) throws Exception {
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {

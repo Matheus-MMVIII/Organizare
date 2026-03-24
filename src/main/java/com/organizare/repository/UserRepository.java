@@ -12,6 +12,7 @@ import java.util.Optional;
 import com.organizare.model.User;
 
 public class UserRepository {
+    // Insere um novo usuario no banco e devolve a entidade com o ID gerado.
     public User insert(Connection connection, User user) throws SQLException {
         String sql = "INSERT INTO users (name, email, cellPhone, month, day) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -36,6 +37,7 @@ public class UserRepository {
         throw new SQLException("Falha ao gerar o identificador do usuario.");
     }
 
+    // Busca um usuario pelo ID e retorna Optional para tratar ausencia de resultado.
     public Optional<User> findById(Connection connection, int userId) throws SQLException {
         String sql = "SELECT * FROM users WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -49,6 +51,7 @@ public class UserRepository {
         }
     }
 
+    // Busca um usuario pelo email para apoiar validacoes de unicidade.
     public Optional<User> findByEmail(Connection connection, String email) throws SQLException {
         String sql = "SELECT * FROM users WHERE email = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -62,6 +65,7 @@ public class UserRepository {
         }
     }
 
+    // Atualiza os dados de um usuario ja existente e retorna a propria entidade atualizada.
     public User update(Connection connection, User user) throws SQLException {
         String sql = "UPDATE users SET name = ?, email = ?, cellPhone = ?, month = ?, day = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -76,6 +80,7 @@ public class UserRepository {
         return user;
     }
 
+    // Remove um usuario pelo ID e informa se alguma linha foi realmente excluida.
     public boolean delete(Connection connection, int userId) throws SQLException {
         String sql = "DELETE FROM users WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -84,6 +89,7 @@ public class UserRepository {
         }
     }
 
+    // Lista todos os usuarios cadastrados em ordem crescente de identificador.
     public List<User> listAll(Connection connection) throws SQLException {
         String sql = "SELECT * FROM users ORDER BY id";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -97,6 +103,7 @@ public class UserRepository {
         }
     }
 
+    // Converte uma linha retornada pelo banco em um objeto User da aplicacao.
     private User mapRow(ResultSet resultSet) throws SQLException {
         return new User(
                 resultSet.getInt("id"),

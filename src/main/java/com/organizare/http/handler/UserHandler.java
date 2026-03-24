@@ -14,10 +14,12 @@ public class UserHandler extends BaseHandler {
 
     private final UserService userService;
 
+    // Recebe o service responsavel pelas regras de negocio relacionadas a usuarios.
     public UserHandler(UserService userService) {
         this.userService = userService;
     }
 
+    // Direciona cada requisicao de usuario para a operacao correta com base no metodo HTTP e na URL.
     @Override
     protected void handleRequest(HttpExchange exchange) throws Exception {
         String method = exchange.getRequestMethod();
