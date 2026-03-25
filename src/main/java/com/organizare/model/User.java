@@ -5,8 +5,8 @@ import java.time.LocalDate;
 public class User {
     private final int id;
     private final String name;
-    private final String email;
-    private final String cellPhone;
+    private final Email email;
+    private final CellPhone cellPhone;
     private final int birthMonth;
     private final int birthDay;
 
@@ -14,8 +14,8 @@ public class User {
     public User(int id, String name, String email, String cellPhone, int birthMonth, int birthDay) {
         this.id = id;
         this.name = name;
-        this.email = email;
-        this.cellPhone = cellPhone;
+        this.email = new Email(email);
+        this.cellPhone = new CellPhone(cellPhone);
         this.birthMonth = birthMonth;
         this.birthDay = birthDay;
     }
@@ -32,12 +32,12 @@ public class User {
 
     // Retorna o email do usuario.
     public String getEmail() {
-        return email;
+        return email.getEmail();
     }
 
     // Retorna o telefone celular do usuario.
     public String getCellPhone() {
-        return cellPhone;
+        return cellPhone.getCellPhone();
     }
 
     // Retorna o mes do aniversario do usuario.
