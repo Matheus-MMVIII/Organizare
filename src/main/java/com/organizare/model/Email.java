@@ -4,9 +4,9 @@ public class Email {
     private final String email;
 
     public Email(String email) {
-        if (!isValidEmail()) {
+        if (!isValidEmail())
             throw new IllegalArgumentException("Email inválido: " + email);
-        }
+
         this.email = email;
     }
 
@@ -15,7 +15,6 @@ public class Email {
     }
 
     private boolean isValidEmail() {
-        // Implementação simples de validação de email
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 }
