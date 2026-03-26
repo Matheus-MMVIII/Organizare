@@ -15,7 +15,7 @@ public class Birth {
         return day;
     }
 
-    public int getMounth() {
+    public int getMonth() {
         return mounth;
     }
 
