@@ -4,7 +4,7 @@ public class Email {
     private final String email;
 
     public Email(String email) {
-        if (!isValidEmail())
+        if (!isValidEmail(email))
             throw new IllegalArgumentException("Email inválido: " + email);
 
         this.email = email;
@@ -14,7 +14,7 @@ public class Email {
         return email;
     }
 
-    private boolean isValidEmail() {
-        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+    private boolean isValidEmail(String email) {
+        return email != null && email.matches("^[^&=_'-+,<>]+@(.+)$");
     }
 }
