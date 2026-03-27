@@ -20,6 +20,6 @@ public class Birth {
     }
 
     private boolean isValidBirht(int day, int mounth) {
-        return day > 0 && day <= 31 && mounth > 0 && mounth >= 12;
+        return day > 0 && day <= 31 && mounth > 0 && mounth <= 12;
     }
 }
