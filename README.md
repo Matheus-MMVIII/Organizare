@@ -40,6 +40,37 @@ Inicie a API:
 java -cp "lib/postgresql-42.7.3.jar:bin" com.organizare.App
 ```
 
+### Frontend React
+
+O frontend foi criado em `frontend/` com Vite + React.
+
+Instale as dependencias:
+
+```bash
+cd frontend
+npm install
+```
+
+Rode em desenvolvimento:
+
+```bash
+npm run dev
+```
+
+Por padrao o Vite sobe em `http://localhost:5173` e faz proxy de `/api` para `http://localhost:8080`.
+
+Se quiser apontar para outra URL da API, rode assim:
+
+```bash
+VITE_API_URL=http://localhost:8080 npm run dev
+```
+
+Para gerar build:
+
+```bash
+npm run build
+```
+
 ## Endpoints
 
 - `GET /health`

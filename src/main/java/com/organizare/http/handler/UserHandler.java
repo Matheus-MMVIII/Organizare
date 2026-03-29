@@ -19,7 +19,6 @@ public class UserHandler extends BaseHandler {
         this.userService = userService;
     }
 
-    // Direciona cada requisicao de usuario para a operacao correta com base no metodo HTTP e na URL.
     @Override
     protected void handleRequest(HttpExchange exchange) throws Exception {
         String method = exchange.getRequestMethod();

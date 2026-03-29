@@ -15,7 +15,8 @@ public final class JsonUtil {
     private JsonUtil() {
     }
 
-    // Converte um JSON plano em mapa de strings para facilitar validacao e uso nos services.
+    // Converte um JSON plano em mapa de strings para facilitar validacao e uso nos
+    // services.
     public static Map<String, String> parseFlatObject(String json) {
         if (json == null) {
             throw new BadRequestException("Corpo JSON obrigatorio.");
@@ -83,14 +84,15 @@ public final class JsonUtil {
         return joiner.toString();
     }
 
-    // Serializa uma peca de roupa para o formato JSON esperado pelos clientes da API.
+    // Serializa uma peca de roupa para o formato JSON esperado pelos clientes da
+    // API.
     public static String clothing(Clothing clothing) {
         return "{"
                 + "\"id\":" + clothing.getId() + ","
                 + "\"name\":\"" + escape(clothing.getName()) + "\","
                 + "\"price\":" + clothing.getPrice() + ","
                 + "\"stock\":" + clothing.getStock() + ","
-                + "\"size\":\"" + escape(clothing.getSize()) + "\","
+                + "\"size\":\"" + escape(clothing.getSizeAsString()) + "\","
                 + "\"color\":\"" + escape(clothing.getColor()) + "\""
                 + "}";
     }
@@ -104,7 +106,8 @@ public final class JsonUtil {
         return joiner.toString();
     }
 
-    // Divide os pares de um objeto JSON sem quebrar valores que estejam entre aspas.
+    // Divide os pares de um objeto JSON sem quebrar valores que estejam entre
+    // aspas.
     private static List<String> splitTopLevel(String content) {
         List<String> parts = new ArrayList<>();
         StringBuilder current = new StringBuilder();
@@ -144,7 +147,8 @@ public final class JsonUtil {
         return parts;
     }
 
-    // Localiza o separador chave-valor ignorando dois pontos que estejam dentro de strings.
+    // Localiza o separador chave-valor ignorando dois pontos que estejam dentro de
+    // strings.
     private static int findColonOutsideQuotes(String pair) {
         boolean inQuotes = false;
         boolean escaped = false;
@@ -170,7 +174,8 @@ public final class JsonUtil {
         return -1;
     }
 
-    // Remove as aspas externas de uma string JSON e converte sequencias escapadas para texto normal.
+    // Remove as aspas externas de uma string JSON e converte sequencias escapadas
+    // para texto normal.
     private static String parseQuotedString(String rawValue) {
         String trimmedValue = rawValue.trim();
         if (trimmedValue.length() < 2 || trimmedValue.charAt(0) != '"'
@@ -180,7 +185,8 @@ public final class JsonUtil {
         return unescape(trimmedValue.substring(1, trimmedValue.length() - 1));
     }
 
-    // Interpreta um valor JSON simples aceitando strings, nulos, numeros e booleanos.
+    // Interpreta um valor JSON simples aceitando strings, nulos, numeros e
+    // booleanos.
     private static String parseValue(String rawValue) {
         String trimmedValue = rawValue.trim();
         if (trimmedValue.startsWith("\"")) {

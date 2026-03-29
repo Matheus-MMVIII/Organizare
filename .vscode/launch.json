@@ -7,7 +7,7 @@
       "request": "launch",
       "mainClass": "com.organizare.App",
       "env": {
-        "DB_URL": "jdbc:postgresql://localhost:5433/organizare",
+        "DB_URL": "jdbc:postgresql://localhost:5432/organizare",
         "DB_USER": "postgres",
         "DB_PASSWORD": "99146632"
       }

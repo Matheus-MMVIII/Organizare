@@ -52,7 +52,6 @@ public class ClothingRepository {
     }
 
     // Atualiza os dados de uma roupa existente e retorna a propria entidade
-    // atualizada.
     public Clothing update(Connection connection, Clothing clothing) throws SQLException {
         String sql = "UPDATE clothing SET name = ?, price = ?, stock = ?, size = ?, color = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {

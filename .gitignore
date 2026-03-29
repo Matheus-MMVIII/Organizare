@@ -33,6 +33,10 @@ replay_pid*
 bin/
 out/
 target/
+node_modules/
+dist/
+frontend/node_modules/
+frontend/dist/
 .env
 .env.*
 !.env.example
