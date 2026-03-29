@@ -37,7 +37,6 @@ public class UserRepository {
         throw new SQLException("Falha ao gerar o identificador do usuario.");
     }
 
-    // Busca um usuario pelo ID e retorna Optional para tratar ausencia de resultado.
     public Optional<User> findById(Connection connection, int userId) throws SQLException {
         String sql = "SELECT * FROM users WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -65,7 +64,6 @@ public class UserRepository {
         }
     }
 
-    // Atualiza os dados de um usuario ja existente e retorna a propria entidade atualizada.
     public User update(Connection connection, User user) throws SQLException {
         String sql = "UPDATE users SET name = ?, email = ?, cellPhone = ?, month = ?, day = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {

@@ -19,7 +19,7 @@ public class ClothingRepository {
             statement.setString(1, clothing.getName());
             statement.setDouble(2, clothing.getPrice());
             statement.setInt(3, clothing.getStock());
-            statement.setString(4, clothing.getSize());
+            statement.setString(4, clothing.getSizeAsString());
             statement.setString(5, clothing.getColor());
             statement.executeUpdate();
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
@@ -29,7 +29,7 @@ public class ClothingRepository {
                             clothing.getName(),
                             clothing.getPrice(),
                             clothing.getStock(),
-                            clothing.getSize(),
+                            clothing.getSizeAsString(),
                             clothing.getColor());
                 }
             }
@@ -51,14 +51,15 @@ public class ClothingRepository {
         }
     }
 
-    // Atualiza os dados de uma roupa existente e retorna a propria entidade atualizada.
+    // Atualiza os dados de uma roupa existente e retorna a propria entidade
+    // atualizada.
     public Clothing update(Connection connection, Clothing clothing) throws SQLException {
         String sql = "UPDATE clothing SET name = ?, price = ?, stock = ?, size = ?, color = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, clothing.getName());
             statement.setDouble(2, clothing.getPrice());
             statement.setInt(3, clothing.getStock());
-            statement.setString(4, clothing.getSize());
+            statement.setString(4, clothing.getSizeAsString());
             statement.setString(5, clothing.getColor());
             statement.setInt(6, clothing.getId());
             statement.executeUpdate();
