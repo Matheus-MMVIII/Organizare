@@ -3,11 +3,11 @@ import StatCard from '../components/StatCard';
 
 function DashboardPage({ app, navigate }) {
   return (
-    <section className="page-content">
+    <section className="page-content">{/*
       <section className="hero card page-hero">
         <div className="hero-copy">
           <span className="eyebrow">Painel principal</span>
-          <h2>Veja o panorama e entre nas paginas certas com um clique.</h2>
+          <h2>Paginas.</h2>
           <p>
             Agora o sistema esta separado em paginas para facilitar o gerenciamento de usuarios e
             roupas sem misturar tudo em uma tela so.
@@ -22,7 +22,7 @@ function DashboardPage({ app, navigate }) {
             Ir para roupas
           </button>
         </div>
-      </section>
+      </section>*/}
 
       <section className="stats-grid">
         <StatCard label="Usuarios cadastrados" value={app.users.length} detail="Total salvo na base" />
@@ -35,7 +35,7 @@ function DashboardPage({ app, navigate }) {
           <SectionIntro
             eyebrow="Usuarios"
             title="Ultimos usuarios"
-            description="Uma visao rapida antes de abrir a pagina completa de gerenciamento."
+            description="Uma visâo rapida antes de abrir a pagina completa de gerenciamento."
           />
 
           <div className="mini-list">

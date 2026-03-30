@@ -28,6 +28,7 @@ function useOrganizareData() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState({ user: false, clothing: false });
   const [deletingId, setDeletingId] = useState('');
+  const [updatingStockId, setUpdatingStockId] = useState('');
   const [feedback, setFeedback] = useState(initialFeedback);
   const [userSearch, setUserSearch] = useState('');
   const [clothingSearch, setClothingSearch] = useState('');
@@ -203,12 +204,42 @@ function useOrganizareData() {
     }
   }
 
+  async function updateClothingStock(item, nextStock) {
+    const newStock = Math.max(0, Number(nextStock));
+
+    try {
+      setUpdatingStockId(`clothing-${item.id}`);
+      const payload = {
+        name: item.name,
+        price: Number(item.price),
+        stock: Number(newStock),
+        size: item.size,
+        color: item.color,
+      };
+
+      const updatedClothing = await requestJson(`/api/clothing/${item.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+
+      setClothing((current) =>
+        current.map((currentItem) => (currentItem.id === item.id ? updatedClothing : currentItem)),
+      );
+      setFeedback({ type: 'success', message: 'Estoque alterado com sucesso.' });
+    } catch (error) {
+      setFeedback({ type: 'error', message: error.message });
+    } finally {
+      setUpdatingStockId('');
+    }
+  }
+
   return {
     clothing,
     clothingForm,
     clothingSearch,
     createClothing,
     createUser,
+    updateClothingStock,
     deleteClothing,
     deleteUser,
     deletingId,
@@ -223,6 +254,7 @@ function useOrganizareData() {
     setClothingSearch,
     setUserSearch,
     submitting,
+    updatingStockId,
     updateClothingField,
     updateUserField,
     userForm,

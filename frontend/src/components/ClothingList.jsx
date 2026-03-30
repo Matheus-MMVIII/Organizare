@@ -1,4 +1,4 @@
-function ClothingList({ clothing, loading, deletingId, onDelete }) {
+function ClothingList({ clothing, loading, deletingId, updatingStockId, onDelete, updateClothingStock }) {
   return (
     <div className="list-grid">
       {loading ? <p className="empty-state">Carregando roupas...</p> : null}
@@ -25,7 +25,29 @@ function ClothingList({ clothing, loading, deletingId, onDelete }) {
             </div>
             <div>
               <dt>Estoque</dt>
-              <dd className={Number(item.stock) <= 5 ? 'highlight-stock' : ''}>{item.stock}</dd>
+              <div className="stock-control">
+                <dd className={Number(item.stock) <= 5 ? 'highlight-stock' : ''}>{item.stock}</dd>
+                <div className="stock-actions">
+                  <button
+                    className="stock-button stock-button-add"
+                    type="button"
+                    onClick={() => void updateClothingStock(item, Number(item.stock) + 1)}
+                    disabled={updatingStockId === `clothing-${item.id}`}
+                    aria-label={`Aumentar estoque de ${item.name}`}
+                  >
+                    +
+                  </button>
+                  <button
+                    className="stock-button stock-button-remove"
+                    type="button"
+                    onClick={() => void updateClothingStock(item, Number(item.stock) - 1)}
+                    disabled={updatingStockId === `clothing-${item.id}` || Number(item.stock) <= 0}
+                    aria-label={`Diminuir estoque de ${item.name}`}
+                  >
+                    -
+                  </button>
+                </div>
+              </div>
             </div>
           </dl>
 

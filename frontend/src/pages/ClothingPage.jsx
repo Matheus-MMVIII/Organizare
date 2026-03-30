@@ -46,7 +46,9 @@ function ClothingPage({ app }) {
             clothing={app.filteredClothing}
             loading={app.loading}
             deletingId={app.deletingId}
+            updatingStockId={app.updatingStockId}
             onDelete={app.deleteClothing}
+            updateClothingStock={app.updateClothingStock}
           />
         </article>
       </section>
