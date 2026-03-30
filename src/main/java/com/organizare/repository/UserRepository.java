@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,23 +14,16 @@ import com.organizare.model.User;
 public class UserRepository {
     // Insere um novo usuario no banco e devolve a entidade com o ID gerado.
     public User insert(Connection connection, User user) throws SQLException {
-        String sql = "INSERT INTO users (name, email, cellPhone, month, day) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        String sql = "INSERT INTO users (name, email, cellPhone, month, day) VALUES (?, ?, ?, ?, ?) RETURNING *";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, user.getName());
             statement.setString(2, user.getEmail());
             statement.setString(3, user.getCellPhone());
             statement.setInt(4, user.getBirthMonth());
             statement.setInt(5, user.getBirthDay());
-            statement.executeUpdate();
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    return new User(
-                            generatedKeys.getInt(1),
-                            user.getName(),
-                            user.getEmail(),
-                            user.getCellPhone(),
-                            user.getBirthMonth(),
-                            user.getBirthDay());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapRow(resultSet);
                 }
             }
         }
@@ -109,6 +102,12 @@ public class UserRepository {
                 resultSet.getString("email"),
                 resultSet.getString("cellphone"),
                 resultSet.getInt("month"),
-                resultSet.getInt("day"));
+                resultSet.getInt("day"),
+                readCreatedAt(resultSet));
+    }
+
+    private java.time.LocalDateTime readCreatedAt(ResultSet resultSet) throws SQLException {
+        Timestamp createdAt = resultSet.getTimestamp("created_at");
+        return createdAt == null ? null : createdAt.toLocalDateTime();
     }
 }

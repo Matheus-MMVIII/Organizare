@@ -1,4 +1,15 @@
 function UserList({ users, loading, deletingId, onDelete }) {
+  function formatBirthday(user) {
+    if (user.birthday) {
+      const [, month, day] = user.birthday.split('-');
+      if (month && day) {
+        return `${day}/${month}`;
+      }
+    }
+
+    return `${String(user.birthDay).padStart(2, '0')}/${String(user.birthMonth).padStart(2, '0')}`;
+  }
+
   return (
     <div className="list-grid">
       {loading ? <p className="empty-state">Carregando usuarios...</p> : null}
@@ -18,9 +29,7 @@ function UserList({ users, loading, deletingId, onDelete }) {
             </div>
             <div>
               <dt>Aniversario</dt>
-              <dd>
-                {String(user.birthDay).padStart(2, '0')}/{String(user.birthMonth).padStart(2, '0')}
-              </dd>
+              <dd>{formatBirthday(user)}</dd>
             </div>
           </dl>
 

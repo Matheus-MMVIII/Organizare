@@ -69,8 +69,10 @@ public final class JsonUtil {
                 + "\"name\":\"" + escape(user.getName()) + "\","
                 + "\"email\":\"" + escape(user.getEmail()) + "\","
                 + "\"cellPhone\":\"" + escape(user.getCellPhone()) + "\","
+                + "\"birthday\":\"" + escape(user.getBirthdayIso()) + "\","
                 + "\"birthMonth\":" + user.getBirthMonth() + ","
                 + "\"birthDay\":" + user.getBirthDay() + ","
+                + "\"createdAt\":\"" + escape(user.getCreatedAt().toString()) + "\","
                 + "\"birthdayToday\":" + user.isBirthdayToday()
                 + "}";
     }

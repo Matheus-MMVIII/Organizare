@@ -23,25 +23,11 @@ function UserForm({ form, onChange, onSubmit, submitting }) {
           <input name="cellPhone" value={form.cellPhone} onChange={onChange} required />
         </label>
         <label>
-          Mes aniversario
+          Data de aniversario
           <input
-            name="birthMonth"
-            type="number"
-            min="1"
-            max="12"
-            value={form.birthMonth}
-            onChange={onChange}
-            required
-          />
-        </label>
-        <label>
-          Dia aniversario
-          <input
-            name="birthDay"
-            type="number"
-            min="1"
-            max="31"
-            value={form.birthDay}
+            name="birthday"
+            type="date"
+            value={form.birthday}
             onChange={onChange}
             required
           />

@@ -6,8 +6,7 @@ const emptyUserForm = {
   name: '',
   email: '',
   cellPhone: '',
-  birthMonth: '',
-  birthDay: '',
+  birthday: '',
 };
 
 const emptyClothingForm = {
@@ -19,6 +18,26 @@ const emptyClothingForm = {
 };
 
 const initialFeedback = { type: '', message: '' };
+
+function getTimestamp(value) {
+  const timestamp = new Date(value ?? '').getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function parseBirthdayInput(value) {
+  const [year, month, day] = String(value ?? '')
+    .split('-')
+    .map((part) => Number(part));
+
+  if (!year || !month || !day) {
+    throw new Error('Selecione uma data de aniversario valida.');
+  }
+
+  return {
+    birthMonth: month,
+    birthDay: day,
+  };
+}
 
 function useOrganizareData() {
   const [users, setUsers] = useState([]);
@@ -68,8 +87,17 @@ function useOrganizareData() {
     [clothing],
   );
 
-  const recentUsers = useMemo(() => users.slice(0, 4), [users]);
-  const recentClothing = useMemo(() => clothing.slice(0, 4), [clothing]);
+  const recentUsers = useMemo(
+    () =>
+      [...users]
+        .sort((firstUser, secondUser) => getTimestamp(secondUser.createdAt) - getTimestamp(firstUser.createdAt))
+        .slice(0, 4),
+    [users],
+  );
+  const recentClothing = useMemo(
+    () => [...clothing].sort((firstItem, secondItem) => secondItem.id - firstItem.id).slice(0, 4),
+    [clothing],
+  );
 
   async function requestJson(path, options = {}) {
     const response = await fetch(`${API_BASE}${path}`, {
@@ -131,10 +159,14 @@ function useOrganizareData() {
 
     try {
       setSubmitting((current) => ({ ...current, user: true }));
+      const { birthMonth, birthDay } = parseBirthdayInput(userForm.birthday);
       const payload = {
-        ...userForm,
-        birthMonth: Number(userForm.birthMonth),
-        birthDay: Number(userForm.birthDay),
+        name: userForm.name,
+        email: userForm.email,
+        cellPhone: userForm.cellPhone,
+        birthday: userForm.birthday,
+        birthMonth,
+        birthDay,
       };
 
       const createdUser = await requestJson('/api/users', {

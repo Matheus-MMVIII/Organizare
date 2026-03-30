@@ -3,6 +3,7 @@ package com.organizare.service;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.MonthDay;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +44,9 @@ public class UserService {
         String name = RequestValidator.requireText(payload, "name", 2, 100);
         String email = RequestValidator.requireEmail(payload, "email");
         String cellPhone = RequestValidator.requirePhone(payload, "cellPhone");
-        int birthMonth = RequestValidator.requireInt(payload, "birthMonth", 1, 12);
-        int birthDay = RequestValidator.requireInt(payload, "birthDay", 1, 31);
+        BirthDateParts birthDate = extractBirthDate(payload);
+        int birthMonth = birthDate.birthMonth();
+        int birthDay = birthDate.birthDay();
         validateBirthDate(birthMonth, birthDay);
 
         try (Connection connection = DatabaseConfig.getConnection()) {
@@ -58,16 +60,18 @@ public class UserService {
         String name = RequestValidator.requireText(payload, "name", 2, 100);
         String email = RequestValidator.requireEmail(payload, "email");
         String cellPhone = RequestValidator.requirePhone(payload, "cellPhone");
-        int birthMonth = RequestValidator.requireInt(payload, "birthMonth", 1, 12);
-        int birthDay = RequestValidator.requireInt(payload, "birthDay", 1, 31);
+        BirthDateParts birthDate = extractBirthDate(payload);
+        int birthMonth = birthDate.birthMonth();
+        int birthDay = birthDate.birthDay();
         validateBirthDate(birthMonth, birthDay);
 
         try (Connection connection = DatabaseConfig.getConnection()) {
-            if (userRepository.findById(connection, id).isEmpty()) {
-                throw new NotFoundException("Usuario nao encontrado.");
-            }
+            User existingUser = userRepository.findById(connection, id)
+                    .orElseThrow(() -> new NotFoundException("Usuario nao encontrado."));
             ensureEmailIsUnique(connection, email, id);
-            return userRepository.update(connection, new User(id, name, email, cellPhone, birthMonth, birthDay));
+            return userRepository.update(
+                    connection,
+                    new User(id, name, email, cellPhone, birthMonth, birthDay, existingUser.getCreatedAt()));
         }
     }
 
@@ -96,6 +100,40 @@ public class UserService {
             MonthDay.of(birthMonth, birthDay);
         } catch (DateTimeException ex) {
             throw new ValidationException("Data de aniversario invalida.");
+        }
+    }
+
+    private BirthDateParts extractBirthDate(Map<String, String> payload) {
+        String birthday = payload.get("birthday");
+        if (birthday != null && !birthday.isBlank()) {
+            try {
+                LocalDate parsedDate = LocalDate.parse(birthday.trim());
+                return new BirthDateParts(parsedDate.getMonthValue(), parsedDate.getDayOfMonth());
+            } catch (DateTimeException exception) {
+                throw new ValidationException("Data de aniversario invalida.");
+            }
+        }
+
+        int birthMonth = RequestValidator.requireInt(payload, "birthMonth", 1, 12);
+        int birthDay = RequestValidator.requireInt(payload, "birthDay", 1, 31);
+        return new BirthDateParts(birthMonth, birthDay);
+    }
+
+    private static final class BirthDateParts {
+        private final int birthMonth;
+        private final int birthDay;
+
+        private BirthDateParts(int birthMonth, int birthDay) {
+            this.birthMonth = birthMonth;
+            this.birthDay = birthDay;
+        }
+
+        private int birthMonth() {
+            return birthMonth;
+        }
+
+        private int birthDay() {
+            return birthDay;
         }
     }
 }
