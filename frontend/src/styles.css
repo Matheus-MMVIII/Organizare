@@ -32,7 +32,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -41,7 +42,8 @@ button {
   border: none;
 }
 
-input {
+input,
+select {
   width: 100%;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.72);
@@ -51,11 +53,39 @@ input {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-input:focus {
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 3rem;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%235a524a' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+}
+
+select option {
+  color: var(--text);
+  background: var(--surface-strong);
+}
+
+select option:checked,
+select option:hover,
+select option:focus {
+  background: rgba(18, 91, 80, 0.14);
+  color: var(--primary-strong);
+}
+
+input:focus,
+select:focus {
   outline: none;
   border-color: rgba(18, 91, 80, 0.45);
   box-shadow: 0 0 0 4px rgba(18, 91, 80, 0.12);
   transform: translateY(-1px);
+}
+
+select:hover {
+  border-color: rgba(18, 91, 80, 0.28);
 }
 
 .page-shell {
@@ -805,5 +835,23 @@ input:focus {
 
   .line-chart-shell {
     min-width: 32rem;
+  }
+
+  .form-grid label {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .form-grid input,
+  .form-grid select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .form-grid select:disabled {
+    background-color: #eae7e3;
+    color: #a8a29b;
+    cursor: not-allowed;
   }
 }

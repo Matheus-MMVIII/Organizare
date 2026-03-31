@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS orders (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    clothing_id INTEGER NOT NULL REFERENCES clothing(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    total_price NUMERIC(10, 2) NOT NULL CHECK (total_price >= 0),
+    order_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

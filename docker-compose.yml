@@ -14,9 +14,9 @@ services:
       ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-http://localhost:5173}
       MAX_REQUEST_BODY_BYTES: ${MAX_REQUEST_BODY_BYTES:-8192}
       SERVER_BACKLOG: ${SERVER_BACKLOG:-50}
-      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-organizare}
-      DB_USER: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-organizare-db}
+      DB_USER: ${POSTGRES_USER:-macinha}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-99146632}
     ports:
       - "${APP_PORT:-8080}:${PORT:-8080}"
     restart: unless-stopped
@@ -33,9 +33,9 @@ services:
     image: postgres:16-alpine
     container_name: organizare-db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-organizare}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-organizare-db}
+      POSTGRES_USER: ${POSTGRES_USER:-macinha}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-99146632}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -45,7 +45,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-organizare}
+        - pg_isready -U ${POSTGRES_USER:-macinha} -d ${POSTGRES_DB:-organizare-db}
       interval: 10s
       timeout: 5s
       retries: 5

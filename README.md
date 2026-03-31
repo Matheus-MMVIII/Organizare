@@ -25,6 +25,12 @@ Projeto Java puro com API HTTP para cadastro de usuarios e produtos de roupa com
 
 A aplicacao tenta ler primeiro as variaveis do sistema e, se elas nao existirem, usa o arquivo local `.env`.
 
+Configuracao padrao deste projeto:
+
+- `DB_URL=jdbc:postgresql://localhost:5432/organizare-db`
+- `DB_USER=macinha`
+- `DB_PASSWORD=99146632`
+
 ## Como rodar
 
 Compile com o driver JDBC no classpath:

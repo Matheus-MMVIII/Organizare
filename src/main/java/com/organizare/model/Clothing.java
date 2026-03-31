@@ -2,12 +2,12 @@ package com.organizare.model;
 
 public class Clothing extends Product {
     private Size size;
-    private String color;
+    private Color color;
 
     public Clothing(int id, String name, double price, int stock, String size, String color) {
         super(id, name, price, stock);
-        this.size = Size.valueOf(size);
-        this.color = color;
+        this.size = Size.valueOf(size.toUpperCase());
+        this.color = Color.valueOf(color);
     }
 
     public Size getSize() {
@@ -19,7 +19,7 @@ public class Clothing extends Product {
     }
 
     public String getColor() {
-        return color;
+        return color.name();
     }
 
 }

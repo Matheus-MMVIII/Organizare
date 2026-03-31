@@ -15,7 +15,7 @@ function ClothingList({ clothing, loading, deletingId, updatingStockId, onDelete
 
           <dl>
             <div>
-              <dt>Preco</dt>
+              <dt>Preço</dt>
               <dd>
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
