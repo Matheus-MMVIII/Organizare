@@ -11,7 +11,7 @@ public class Buy {
     private final LocalDateTime createdAt;
 
     public Buy(int id, int user_id, int product_id, int quantity, Double total_price) {
-        this(id, user_id, product_id, quantity, LocalDateTime.now());
+        this(id, user_id, product_id, quantity, total_price, LocalDateTime.now());
     }
 
     public Buy(int id, int user_id, int product_id, int quantity, Double total_price, LocalDateTime createdAt) {

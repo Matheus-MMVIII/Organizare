@@ -9,6 +9,7 @@ import java.util.StringJoiner;
 import com.organizare.exception.BadRequestException;
 import com.organizare.model.Clothing;
 import com.organizare.model.User;
+import com.organizare.model.Buy;
 
 public final class JsonUtil {
     // Impede a instanciacao da classe utilitaria de serializacao e parse de JSON.
@@ -104,6 +105,24 @@ public final class JsonUtil {
         StringJoiner joiner = new StringJoiner(",", "[", "]");
         for (Clothing clothing : clothingItems) {
             joiner.add(clothing(clothing));
+        }
+        return joiner.toString();
+    }
+
+    public static String buy(Buy buy) {
+        return "{"
+                + "\"id\":" + buy.getId() + ","
+                + "\"user_id\":\"" + buy.getUserId() + "\","
+                + "\"product_id\":" + buy.getProductId() + ","
+                + "\"quantity\":" + buy.getQuantity() + ","
+                + "\"total_price\":\"" + buy.getProductPrice() + "\""
+                + "}";
+    }
+
+    public static String buyItems(List<Buy> buyItems) {
+        StringJoiner joiner = new StringJoiner(",", "[", "]");
+        for (Buy buy : buyItems) {
+            joiner.add(buy(buy));
         }
         return joiner.toString();
     }
