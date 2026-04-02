@@ -3,7 +3,7 @@ package com.organizare.model;
 public abstract class Product {
     private final int id;
     private final String name;
-    private double price;
+    private Double price;
     private int stock;
 
     protected Product(int id, String name, double price, int stock) {
@@ -21,7 +21,7 @@ public abstract class Product {
         return name;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
