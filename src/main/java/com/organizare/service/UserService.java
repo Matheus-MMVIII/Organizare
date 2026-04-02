@@ -24,7 +24,8 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    // Lista todos os usuarios cadastrados abrindo e fechando a conexao automaticamente.
+    // Lista todos os usuarios cadastrados abrindo e fechando a conexao
+    // automaticamente.
     public List<User> listAll() throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
             return userRepository.listAll(connection);
@@ -35,7 +36,7 @@ public class UserService {
     public User findById(int id) throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
             return userRepository.findById(connection, id)
-                    .orElseThrow(() -> new NotFoundException("Usuario nao encontrado."));
+                    .orElseThrow(() -> new NotFoundException("Usuario não encontrado."));
         }
     }
 
@@ -55,7 +56,8 @@ public class UserService {
         }
     }
 
-    // Valida os dados recebidos, verifica existencia do usuario e atualiza seu cadastro.
+    // Valida os dados recebidos, verifica existencia do usuario e atualiza seu
+    // cadastro.
     public User update(int id, Map<String, String> payload) throws SQLException {
         String name = RequestValidator.requireText(payload, "name", 2, 100);
         String email = RequestValidator.requireEmail(payload, "email");
@@ -85,7 +87,8 @@ public class UserService {
         }
     }
 
-    // Garante que nenhum outro usuario use o mesmo email antes de salvar a alteracao.
+    // Garante que nenhum outro usuario use o mesmo email antes de salvar a
+    // alteracao.
     private void ensureEmailIsUnique(Connection connection, String email, Integer currentUserId) throws SQLException {
         userRepository.findByEmail(connection, email).ifPresent(existingUser -> {
             if (currentUserId == null || existingUser.getId() != currentUserId.intValue()) {
