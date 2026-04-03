@@ -2,6 +2,7 @@ const items = [
   { key: 'dashboard', label: 'Dashboard', description: 'Visao geral do sistema' },
   { key: 'users', label: 'Usuarios', description: 'Cadastrar e deletar usuarios' },
   { key: 'clothing', label: 'Roupas', description: 'Cadastrar e deletar produtos' },
+  { key: 'buy', label: 'Compras', description: 'Registrar pedidos e acompanhar vendas' },
 ];
 
 function SidebarNav({ currentRoute, navigate }) {
