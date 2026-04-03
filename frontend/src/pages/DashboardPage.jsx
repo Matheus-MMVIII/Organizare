@@ -7,12 +7,21 @@ const CHART_WINDOW_SIZE = 7;
 const LINE_CHART_HEIGHT = 145;
 const CHART_PADDING = { top: 22, right: 22, bottom: 32, left: 22 };
 
+const currencyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+});
+
 function capitalize(text) {
   if (!text) {
     return '';
   }
 
   return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function formatCurrency(value) {
+  return currencyFormatter.format(Number(value || 0));
 }
 
 function buildUsersMonthChart(users = []) {
@@ -41,11 +50,9 @@ function buildUsersMonthChart(users = []) {
 
     if (createdAt.getFullYear() === currentYear && createdAt.getMonth() === currentMonth) {
       const dayIndex = createdAt.getDate() - 1;
-      if (!points[dayIndex]) {
-        return;
+      if (points[dayIndex]) {
+        points[dayIndex].count += 1;
       }
-
-      points[dayIndex].count += 1;
     }
   });
 
@@ -56,6 +63,55 @@ function buildUsersMonthChart(users = []) {
   return {
     monthLabel,
     total,
+    peakCount,
+    peakDay,
+    points,
+  };
+}
+
+function buildBuysMonthChart(buys = []) {
+  const safeBuys = Array.isArray(buys) ? buys : [];
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const currentDay = today.getDate();
+  const monthLabel = capitalize(
+    new Intl.DateTimeFormat('pt-BR', {
+      month: 'long',
+      year: 'numeric',
+    }).format(today),
+  );
+
+  const points = Array.from({ length: currentDay }, (_, index) => ({
+    day: index + 1,
+    count: 0,
+    revenue: 0,
+  }));
+
+  safeBuys.forEach((buy) => {
+    const orderDate = new Date(buy.orderDate ?? '');
+    if (Number.isNaN(orderDate.getTime())) {
+      return;
+    }
+
+    if (orderDate.getFullYear() === currentYear && orderDate.getMonth() === currentMonth) {
+      const dayIndex = orderDate.getDate() - 1;
+      if (points[dayIndex]) {
+        points[dayIndex].count += 1;
+        points[dayIndex].revenue += Number(buy.totalPrice || 0);
+      }
+    }
+  });
+
+  const totalOrders = points.reduce((sum, point) => sum + point.count, 0);
+  const totalRevenue = points.reduce((sum, point) => sum + point.revenue, 0);
+  const peakCount = points.reduce((highest, point) => Math.max(highest, point.count), 0);
+  const peakDay = points.find((point) => point.count === peakCount)?.day ?? null;
+
+  return {
+    monthLabel,
+    totalOrders,
+    totalRevenue,
     peakCount,
     peakDay,
     points,
@@ -112,7 +168,6 @@ function buildLineChartGeometry(points) {
     linePath,
     areaPath,
     gridLines,
-    maxCount,
     baseY,
   };
 }
@@ -120,25 +175,48 @@ function buildLineChartGeometry(points) {
 function DashboardPage({ app, navigate }) {
   const users = Array.isArray(app.users) ? app.users : [];
   const clothing = Array.isArray(app.clothing) ? app.clothing : [];
+  const buys = Array.isArray(app.buys) ? app.buys : [];
   const recentUsers = Array.isArray(app.recentUsers) ? app.recentUsers : [];
   const recentClothing = Array.isArray(app.recentClothing) ? app.recentClothing : [];
+  const recentBuys = Array.isArray(app.recentBuys) ? app.recentBuys : [];
+
   const usersMonthChart = useMemo(() => buildUsersMonthChart(users), [users]);
-  const totalWindows = Math.max(1, Math.ceil(usersMonthChart.points.length / CHART_WINDOW_SIZE));
-  const [chartWindowIndex, setChartWindowIndex] = useState(totalWindows - 1);
+  const buysMonthChart = useMemo(() => buildBuysMonthChart(buys), [buys]);
+
+  const usersTotalWindows = Math.max(1, Math.ceil(usersMonthChart.points.length / CHART_WINDOW_SIZE));
+  const buysTotalWindows = Math.max(1, Math.ceil(buysMonthChart.points.length / CHART_WINDOW_SIZE));
+
+  const [usersChartWindowIndex, setUsersChartWindowIndex] = useState(usersTotalWindows - 1);
+  const [buysChartWindowIndex, setBuysChartWindowIndex] = useState(buysTotalWindows - 1);
 
   useEffect(() => {
-    setChartWindowIndex(totalWindows - 1);
-  }, [totalWindows]);
+    setUsersChartWindowIndex(usersTotalWindows - 1);
+  }, [usersTotalWindows]);
 
-  const startIndex = chartWindowIndex * CHART_WINDOW_SIZE;
-  const visiblePoints = usersMonthChart.points.slice(startIndex, startIndex + CHART_WINDOW_SIZE);
-  const visibleTotal = visiblePoints.reduce((sum, point) => sum + point.count, 0);
-  const visiblePeak = visiblePoints.reduce((highest, point) => Math.max(highest, point.count), 0);
-  const visibleRangeStart = visiblePoints[0]?.day ?? 1;
-  const visibleRangeEnd = visiblePoints.at(-1)?.day ?? visibleRangeStart;
-  const isViewingLatestWindow = chartWindowIndex === totalWindows - 1;
-  const chartGeometry = useMemo(() => buildLineChartGeometry(visiblePoints), [visiblePoints]);
-  const latestPoint = chartGeometry.chartPoints.at(-1);
+  useEffect(() => {
+    setBuysChartWindowIndex(buysTotalWindows - 1);
+  }, [buysTotalWindows]);
+
+  const usersStartIndex = usersChartWindowIndex * CHART_WINDOW_SIZE;
+  const visibleUserPoints = usersMonthChart.points.slice(usersStartIndex, usersStartIndex + CHART_WINDOW_SIZE);
+  const visibleUsersTotal = visibleUserPoints.reduce((sum, point) => sum + point.count, 0);
+  const visibleUsersPeak = visibleUserPoints.reduce((highest, point) => Math.max(highest, point.count), 0);
+  const visibleUsersRangeStart = visibleUserPoints[0]?.day ?? 1;
+  const visibleUsersRangeEnd = visibleUserPoints.at(-1)?.day ?? visibleUsersRangeStart;
+  const isViewingLatestUsersWindow = usersChartWindowIndex === usersTotalWindows - 1;
+  const usersChartGeometry = useMemo(() => buildLineChartGeometry(visibleUserPoints), [visibleUserPoints]);
+  const latestUserPoint = usersChartGeometry.chartPoints.at(-1);
+
+  const buysStartIndex = buysChartWindowIndex * CHART_WINDOW_SIZE;
+  const visibleBuyPoints = buysMonthChart.points.slice(buysStartIndex, buysStartIndex + CHART_WINDOW_SIZE);
+  const visibleBuysTotal = visibleBuyPoints.reduce((sum, point) => sum + point.count, 0);
+  const visibleBuysRevenue = visibleBuyPoints.reduce((sum, point) => sum + point.revenue, 0);
+  const visibleBuysPeak = visibleBuyPoints.reduce((highest, point) => Math.max(highest, point.count), 0);
+  const visibleBuysRangeStart = visibleBuyPoints[0]?.day ?? 1;
+  const visibleBuysRangeEnd = visibleBuyPoints.at(-1)?.day ?? visibleBuysRangeStart;
+  const isViewingLatestBuysWindow = buysChartWindowIndex === buysTotalWindows - 1;
+  const buysChartGeometry = useMemo(() => buildLineChartGeometry(visibleBuyPoints), [visibleBuyPoints]);
+  const latestBuyPoint = buysChartGeometry.chartPoints.at(-1);
 
   return (
     <section className="page-content">
@@ -150,22 +228,25 @@ function DashboardPage({ app, navigate }) {
             description={`Linha de cadastros em ${usersMonthChart.monthLabel}, com foco no periodo mais recente.`}
             actions={
               <div className="chart-period-actions">
-                <span className={`chart-window-label${isViewingLatestWindow ? ' is-current' : ''}`}>
-                  Dias {String(visibleRangeStart).padStart(2, '0')} a {String(visibleRangeEnd).padStart(2, '0')}
+                <span className={`chart-window-label${isViewingLatestUsersWindow ? ' is-current' : ''}`}>
+                  Dias {String(visibleUsersRangeStart).padStart(2, '0')} a{' '}
+                  {String(visibleUsersRangeEnd).padStart(2, '0')}
                 </span>
                 <button
                   className="secondary-button chart-nav-button"
                   type="button"
-                  onClick={() => setChartWindowIndex((current) => Math.max(0, current - 1))}
-                  disabled={chartWindowIndex === 0}
+                  onClick={() => setUsersChartWindowIndex((current) => Math.max(0, current - 1))}
+                  disabled={usersChartWindowIndex === 0}
                 >
                   Anteriores
                 </button>
                 <button
                   className="secondary-button chart-nav-button"
                   type="button"
-                  onClick={() => setChartWindowIndex((current) => Math.min(totalWindows - 1, current + 1))}
-                  disabled={isViewingLatestWindow}
+                  onClick={() =>
+                    setUsersChartWindowIndex((current) => Math.min(usersTotalWindows - 1, current + 1))
+                  }
+                  disabled={isViewingLatestUsersWindow}
                 >
                   Mais recente
                 </button>
@@ -180,22 +261,22 @@ function DashboardPage({ app, navigate }) {
             </div>
             <p>
               {usersMonthChart.peakCount > 0
-                ? `Pico geral no dia ${usersMonthChart.peakDay}, com ${usersMonthChart.peakCount} cadastro(s). Nesta janela, o maior volume foi ${visiblePeak}.`
+                ? `Pico geral no dia ${usersMonthChart.peakDay}, com ${usersMonthChart.peakCount} cadastro(s). Nesta janela, o maior volume foi ${visibleUsersPeak}.`
                 : 'Assim que surgirem novos usuarios neste mes, a linha aparecera aqui com o periodo mais recente em destaque.'}
             </p>
           </div>
 
           <div className="chart-focus-row">
-            <span className="chart-focus-badge">{isViewingLatestWindow ? 'Foco atual' : 'Periodo anterior'}</span>
-            <strong>{visibleTotal} cadastro(s) neste recorte visivel</strong>
-            <span>{totalWindows > 1 ? `Janela ${chartWindowIndex + 1} de ${totalWindows}` : 'Mes atual completo'}</span>
+            <span className="chart-focus-badge">{isViewingLatestUsersWindow ? 'Foco atual' : 'Periodo anterior'}</span>
+            <strong>{visibleUsersTotal} cadastro(s) neste recorte visivel</strong>
+            <span>{usersTotalWindows > 1 ? `Janela ${usersChartWindowIndex + 1} de ${usersTotalWindows}` : 'Mes atual completo'}</span>
           </div>
 
           <div className="chart-scroll">
             <div className="line-chart-shell">
               <svg
                 className="line-chart-svg"
-                viewBox={`0 0 ${chartGeometry.svgWidth} ${chartGeometry.svgHeight}`}
+                viewBox={`0 0 ${usersChartGeometry.svgWidth} ${usersChartGeometry.svgHeight}`}
                 role="img"
                 aria-label="Grafico de linha de novos usuarios por dia no mes atual"
               >
@@ -210,32 +291,32 @@ function DashboardPage({ app, navigate }) {
                   </linearGradient>
                 </defs>
 
-                {chartGeometry.gridLines.map((gridLine) => (
+                {usersChartGeometry.gridLines.map((gridLine) => (
                   <line
                     key={gridLine.y}
                     className="chart-grid-line"
                     x1={CHART_PADDING.left}
-                    x2={chartGeometry.svgWidth - CHART_PADDING.right}
+                    x2={usersChartGeometry.svgWidth - CHART_PADDING.right}
                     y1={gridLine.y}
                     y2={gridLine.y}
                   />
                 ))}
 
-                {chartGeometry.areaPath ? <path className="chart-area" d={chartGeometry.areaPath} /> : null}
-                {chartGeometry.linePath ? <path className="chart-line" d={chartGeometry.linePath} /> : null}
+                {usersChartGeometry.areaPath ? <path className="chart-area" d={usersChartGeometry.areaPath} /> : null}
+                {usersChartGeometry.linePath ? <path className="chart-line" d={usersChartGeometry.linePath} /> : null}
 
-                {chartGeometry.chartPoints.map((point) => (
+                {usersChartGeometry.chartPoints.map((point) => (
                   <g key={point.day}>
                     <circle
-                      className={`chart-dot${latestPoint?.day === point.day ? ' chart-dot-active' : ''}`}
+                      className={`chart-dot${latestUserPoint?.day === point.day ? ' chart-dot-active' : ''}`}
                       cx={point.x}
                       cy={point.y}
-                      r={latestPoint?.day === point.day ? 6 : 4.5}
+                      r={latestUserPoint?.day === point.day ? 6 : 4.5}
                     />
                     <text className="chart-point-value" x={point.x} y={point.y - 12} textAnchor="middle">
                       {point.count}
                     </text>
-                    <text className="chart-axis-text" x={point.x} y={chartGeometry.baseY + 18} textAnchor="middle">
+                    <text className="chart-axis-text" x={point.x} y={usersChartGeometry.baseY + 18} textAnchor="middle">
                       {String(point.day).padStart(2, '0')}
                     </text>
                   </g>
@@ -245,22 +326,115 @@ function DashboardPage({ app, navigate }) {
           </div>
         </article>
 
-        <article className="card section-card chart-card future-chart-card">
+        <article className="card section-card chart-card">
           <SectionIntro
-            eyebrow="Vendas"
-            title="Espaco para o proximo grafico"
-            description="Area reservada para voce adicionar depois um grafico de vendas."
+            eyebrow="Compras"
+            title="Movimento de compras no mes"
+            description={`Pedidos registrados em ${buysMonthChart.monthLabel}, com foco no recorte mais recente.`}
             actions={
-              <button className="primary-button alt-button" type="button" onClick={() => navigate('clothing')}>
-                Ver roupas
-              </button>
+              <div className="chart-period-actions">
+                <span className={`chart-window-label${isViewingLatestBuysWindow ? ' is-current' : ''}`}>
+                  Dias {String(visibleBuysRangeStart).padStart(2, '0')} a{' '}
+                  {String(visibleBuysRangeEnd).padStart(2, '0')}
+                </span>
+                <button
+                  className="secondary-button chart-nav-button"
+                  type="button"
+                  onClick={() => setBuysChartWindowIndex((current) => Math.max(0, current - 1))}
+                  disabled={buysChartWindowIndex === 0}
+                >
+                  Anteriores
+                </button>
+                <button
+                  className="secondary-button chart-nav-button"
+                  type="button"
+                  onClick={() => setBuysChartWindowIndex((current) => Math.min(buysTotalWindows - 1, current + 1))}
+                  disabled={isViewingLatestBuysWindow}
+                >
+                  Mais recente
+                </button>
+                <button className="primary-button alt-button" type="button" onClick={() => navigate('buy')}>
+                  Ver compras
+                </button>
+              </div>
             }
           />
 
-          <div className="future-chart-placeholder">
-            <span className="future-chart-badge">Em preparacao</span>
-            <strong>Grafico de vendas</strong>
-            <p>Este bloco ja fica separado no layout para voce encaixar a proxima visualizacao sem mexer na estrutura.</p>
+          <div className="chart-summary-row">
+            <div className="chart-highlight">
+              <strong>{formatCurrency(buysMonthChart.totalRevenue)}</strong>
+              <span>faturamento neste mes</span>
+            </div>
+            <p>
+              {buysMonthChart.peakCount > 0
+                ? `${buysMonthChart.totalOrders} compra(s) registradas no mes. O pico de pedidos foi no dia ${buysMonthChart.peakDay}, com ${buysMonthChart.peakCount} compra(s).`
+                : 'Assim que as compras forem registradas, este grafico passa a mostrar o ritmo de pedidos do mes atual.'}
+            </p>
+          </div>
+
+          <div className="chart-focus-row">
+            <span className="chart-focus-badge">{isViewingLatestBuysWindow ? 'Foco atual' : 'Periodo anterior'}</span>
+            <strong>{visibleBuysTotal} compra(s) neste recorte visivel</strong>
+            <span>{formatCurrency(visibleBuysRevenue)} no mesmo periodo</span>
+            <span>{visibleBuysPeak > 0 ? `Pico visivel de ${visibleBuysPeak} pedido(s)` : 'Sem pedidos nesta janela'}</span>
+          </div>
+
+          <div className="chart-scroll">
+            <div className="line-chart-shell">
+              <svg
+                className="line-chart-svg"
+                viewBox={`0 0 ${buysChartGeometry.svgWidth} ${buysChartGeometry.svgHeight}`}
+                role="img"
+                aria-label="Grafico de linha de compras por dia no mes atual"
+              >
+                <defs>
+                  <linearGradient id="sales-line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="rgba(18, 91, 80, 0.98)" />
+                    <stop offset="100%" stopColor="rgba(221, 107, 66, 0.95)" />
+                  </linearGradient>
+                  <linearGradient id="sales-area-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="rgba(221, 107, 66, 0.2)" />
+                    <stop offset="100%" stopColor="rgba(221, 107, 66, 0.03)" />
+                  </linearGradient>
+                </defs>
+
+                {buysChartGeometry.gridLines.map((gridLine) => (
+                  <line
+                    key={gridLine.y}
+                    className="chart-grid-line"
+                    x1={CHART_PADDING.left}
+                    x2={buysChartGeometry.svgWidth - CHART_PADDING.right}
+                    y1={gridLine.y}
+                    y2={gridLine.y}
+                  />
+                ))}
+
+                {buysChartGeometry.areaPath ? (
+                  <path className="chart-area" d={buysChartGeometry.areaPath} style={{ fill: 'url(#sales-area-gradient)' }} />
+                ) : null}
+                {buysChartGeometry.linePath ? (
+                  <path className="chart-line" d={buysChartGeometry.linePath} style={{ stroke: 'url(#sales-line-gradient)' }} />
+                ) : null}
+
+                {buysChartGeometry.chartPoints.map((point) => (
+                  <g key={point.day}>
+                    <circle
+                      className={`chart-dot${latestBuyPoint?.day === point.day ? ' chart-dot-active' : ''}`}
+                      cx={point.x}
+                      cy={point.y}
+                      r={latestBuyPoint?.day === point.day ? 6 : 4.5}
+                      style={latestBuyPoint?.day === point.day ? { stroke: 'var(--accent)' } : undefined}
+                    />
+                    <text className="chart-point-value" x={point.x} y={point.y - 12} textAnchor="middle">
+                      {point.count}
+                    </text>
+                    <text className="chart-axis-text" x={point.x} y={buysChartGeometry.baseY + 18} textAnchor="middle">
+                      {String(point.day).padStart(2, '0')}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            </div>
           </div>
         </article>
       </section>
@@ -268,7 +442,13 @@ function DashboardPage({ app, navigate }) {
       <section className="stats-grid">
         <StatCard label="Usuarios cadastrados" value={users.length} detail="Total salvo na base" />
         <StatCard label="Roupas cadastradas" value={clothing.length} detail="Itens no catalogo" tone="accent-card" />
-        <StatCard label="Estoque baixo" value={app.lowStockCount} detail="Itens com 5 ou menos" tone="warm-card" />
+        <StatCard label="Compras registradas" value={buys.length} detail="Pedidos feitos ate agora" />
+        <StatCard
+          label="Faturamento do mes"
+          value={formatCurrency(app.currentMonthRevenue)}
+          detail="Soma das compras do mes atual"
+          tone="warm-card"
+        />
       </section>
 
       <section className="workspace-grid dashboard-grid">
@@ -306,6 +486,27 @@ function DashboardPage({ app, navigate }) {
                 <strong>{item.name}</strong>
                 <span>
                   {item.color} • Tam. {item.size} • Estoque {item.stock}
+                </span>
+              </article>
+            ))}
+          </div>
+        </article>
+
+        <article className="card section-card">
+          <SectionIntro
+            eyebrow="Compras"
+            title="Ultimas compras"
+            description="Pedidos mais recentes para bater o olho antes de abrir a pagina dedicada."
+          />
+
+          <div className="mini-list">
+            {app.loading ? <p className="empty-state">Carregando compras...</p> : null}
+            {!app.loading && recentBuys.length === 0 ? <p className="empty-state">Nenhuma compra registrada.</p> : null}
+            {recentBuys.map((buy) => (
+              <article key={buy.id} className="mini-card">
+                <strong>{formatCurrency(buy.totalPrice)}</strong>
+                <span>
+                  {buy.userName} • {buy.clothingName} • {buy.quantity} unidade(s)
                 </span>
               </article>
             ))}
