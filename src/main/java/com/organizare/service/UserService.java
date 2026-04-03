@@ -13,15 +13,18 @@ import com.organizare.exception.ConflictException;
 import com.organizare.exception.NotFoundException;
 import com.organizare.exception.ValidationException;
 import com.organizare.model.User;
+import com.organizare.repository.BuyRepository;
 import com.organizare.repository.UserRepository;
 import com.organizare.validation.RequestValidator;
 
 public class UserService {
     private final UserRepository userRepository;
+    private final BuyRepository buyRepository;
 
     // Recebe o repositorio usado para acessar e persistir dados de usuarios.
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, BuyRepository buyRepository) {
         this.userRepository = userRepository;
+        this.buyRepository = buyRepository;
     }
 
     // Lista todos os usuarios cadastrados abrindo e fechando a conexao
@@ -80,6 +83,9 @@ public class UserService {
     // Remove um usuario pelo ID e falha com 404 quando o registro nao existe.
     public void delete(int id) throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
+            if (buyRepository.existsByUserId(connection, id)) {
+                throw new ConflictException("Nao e possivel deletar um usuario com compras registradas.");
+            }
             boolean deleted = userRepository.delete(connection, id);
             if (!deleted) {
                 throw new NotFoundException("Usuario nao encontrado.");

@@ -6,17 +6,21 @@ import java.util.List;
 import java.util.Map;
 
 import com.organizare.config.DatabaseConfig;
+import com.organizare.exception.ConflictException;
 import com.organizare.exception.NotFoundException;
 import com.organizare.model.Clothing;
+import com.organizare.repository.BuyRepository;
 import com.organizare.repository.ClothingRepository;
 import com.organizare.validation.RequestValidator;
 
 public class ClothingService {
     private final ClothingRepository clothingRepository;
+    private final BuyRepository buyRepository;
 
     // Recebe o repositorio usado para acessar e persistir dados de roupas.
-    public ClothingService(ClothingRepository clothingRepository) {
+    public ClothingService(ClothingRepository clothingRepository, BuyRepository buyRepository) {
         this.clothingRepository = clothingRepository;
+        this.buyRepository = buyRepository;
     }
 
     // Lista todas as roupas cadastradas abrindo e fechando a conexao automaticamente.
@@ -66,6 +70,9 @@ public class ClothingService {
     // Remove uma roupa pelo ID e falha com 404 quando o registro nao existe.
     public void delete(int id) throws SQLException {
         try (Connection connection = DatabaseConfig.getConnection()) {
+            if (buyRepository.existsByClothingId(connection, id)) {
+                throw new ConflictException("Nao e possivel deletar uma roupa com compras registradas.");
+            }
             boolean deleted = clothingRepository.delete(connection, id);
             if (!deleted) {
                 throw new NotFoundException("Peca de roupa nao encontrada.");
