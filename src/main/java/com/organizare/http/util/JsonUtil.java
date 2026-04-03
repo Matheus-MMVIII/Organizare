@@ -112,10 +112,13 @@ public final class JsonUtil {
     public static String buy(Buy buy) {
         return "{"
                 + "\"id\":" + buy.getId() + ","
-                + "\"user_id\":\"" + buy.getUserId() + "\","
-                + "\"product_id\":" + buy.getProductId() + ","
+                + "\"userId\":" + buy.getUserId() + ","
+                + "\"userName\":\"" + escapeNullable(buy.getUserName()) + "\","
+                + "\"clothingId\":" + buy.getClothingId() + ","
+                + "\"clothingName\":\"" + escapeNullable(buy.getClothingName()) + "\","
                 + "\"quantity\":" + buy.getQuantity() + ","
-                + "\"total_price\":\"" + buy.getProductPrice() + "\""
+                + "\"totalPrice\":" + buy.getTotalPrice() + ","
+                + "\"orderDate\":\"" + escape(buy.getOrderDate().toString()) + "\""
                 + "}";
     }
 
@@ -232,6 +235,10 @@ public final class JsonUtil {
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r");
+    }
+
+    private static String escapeNullable(String value) {
+        return escape(value == null ? "" : value);
     }
 
     // Converte sequencias escapadas de uma string JSON para seus caracteres reais.

@@ -42,7 +42,7 @@ public class BuyHandler extends BaseHandler {
             return;
         }
 
-        if ("PUT".equalsIgnoreCase(method) && id == -1) {
+        if ("PUT".equalsIgnoreCase(method) && id != -1) {
             Map<String, String> payload = JsonUtil.parseFlatObject(requireJsonBody(exchange));
             Buy updatedBuy = buyService.update(id, payload);
             HttpExchangeHelper.sendJson(exchange, 200, JsonUtil.buy(updatedBuy));

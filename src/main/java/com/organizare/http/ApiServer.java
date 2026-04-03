@@ -50,9 +50,15 @@ public class ApiServer {
     // handler.
     private void registerContexts() {
         DatabaseMigration.ensureUserCreatedAtColumn();
-        UserService userService = new UserService(new UserRepository());
-        ClothingService clothingService = new ClothingService(new ClothingRepository());
-        BuyService buyService = new BuyService(new BuyRepository());
+        DatabaseMigration.ensureOrdersTable();
+
+        UserRepository userRepository = new UserRepository();
+        ClothingRepository clothingRepository = new ClothingRepository();
+        BuyRepository buyRepository = new BuyRepository();
+
+        UserService userService = new UserService(userRepository, buyRepository);
+        ClothingService clothingService = new ClothingService(clothingRepository, buyRepository);
+        BuyService buyService = new BuyService(buyRepository, userRepository, clothingRepository);
 
         server.createContext("/health", new HealthHandler());
         server.createContext("/api/users", new UserHandler(userService));
