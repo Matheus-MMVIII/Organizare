@@ -1,6 +1,6 @@
 function ClothingForm({ form, onChange, onSubmit, submitting }) {
   return (
-    <article className="card section-card form-card">
+    <article className="card section-card form-card clothing-form-card">
       <div className="section-header compact-header">
         <div>
           <span className="eyebrow">Catalogo</span>
@@ -33,6 +33,7 @@ function ClothingForm({ form, onChange, onSubmit, submitting }) {
         <label>
           Tamanho
           <select
+            className="clothing-form-select"
             name="size"
             value={form.size || "PP"}
             onChange={onChange}
@@ -48,6 +49,7 @@ function ClothingForm({ form, onChange, onSubmit, submitting }) {
         <label>
           Cor
           <select
+            className="clothing-form-select"
             name="color"
             value={form.color || "Branco"}
             onChange={onChange}

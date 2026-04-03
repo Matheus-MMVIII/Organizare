@@ -15,7 +15,8 @@ function capitalize(text) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-function buildUsersMonthChart(users) {
+function buildUsersMonthChart(users = []) {
+  const safeUsers = Array.isArray(users) ? users : [];
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth();
@@ -32,14 +33,19 @@ function buildUsersMonthChart(users) {
     count: 0,
   }));
 
-  users.forEach((user) => {
+  safeUsers.forEach((user) => {
     const createdAt = new Date(user.createdAt ?? '');
     if (Number.isNaN(createdAt.getTime())) {
       return;
     }
 
     if (createdAt.getFullYear() === currentYear && createdAt.getMonth() === currentMonth) {
-      points[createdAt.getDate() - 1].count += 1;
+      const dayIndex = createdAt.getDate() - 1;
+      if (!points[dayIndex]) {
+        return;
+      }
+
+      points[dayIndex].count += 1;
     }
   });
 
@@ -112,7 +118,11 @@ function buildLineChartGeometry(points) {
 }
 
 function DashboardPage({ app, navigate }) {
-  const usersMonthChart = useMemo(() => buildUsersMonthChart(app.users), [app.users]);
+  const users = Array.isArray(app.users) ? app.users : [];
+  const clothing = Array.isArray(app.clothing) ? app.clothing : [];
+  const recentUsers = Array.isArray(app.recentUsers) ? app.recentUsers : [];
+  const recentClothing = Array.isArray(app.recentClothing) ? app.recentClothing : [];
+  const usersMonthChart = useMemo(() => buildUsersMonthChart(users), [users]);
   const totalWindows = Math.max(1, Math.ceil(usersMonthChart.points.length / CHART_WINDOW_SIZE));
   const [chartWindowIndex, setChartWindowIndex] = useState(totalWindows - 1);
 
@@ -256,8 +266,8 @@ function DashboardPage({ app, navigate }) {
       </section>
 
       <section className="stats-grid">
-        <StatCard label="Usuarios cadastrados" value={app.users.length} detail="Total salvo na base" />
-        <StatCard label="Roupas cadastradas" value={app.clothing.length} detail="Itens no catalogo" tone="accent-card" />
+        <StatCard label="Usuarios cadastrados" value={users.length} detail="Total salvo na base" />
+        <StatCard label="Roupas cadastradas" value={clothing.length} detail="Itens no catalogo" tone="accent-card" />
         <StatCard label="Estoque baixo" value={app.lowStockCount} detail="Itens com 5 ou menos" tone="warm-card" />
       </section>
 
@@ -271,8 +281,8 @@ function DashboardPage({ app, navigate }) {
 
           <div className="mini-list">
             {app.loading ? <p className="empty-state">Carregando usuarios...</p> : null}
-            {!app.loading && app.recentUsers.length === 0 ? <p className="empty-state">Nenhum usuario cadastrado.</p> : null}
-            {app.recentUsers.map((user) => (
+            {!app.loading && recentUsers.length === 0 ? <p className="empty-state">Nenhum usuario cadastrado.</p> : null}
+            {recentUsers.map((user) => (
               <article key={user.id} className="mini-card">
                 <strong>{user.name}</strong>
                 <span>{user.email}</span>
@@ -290,8 +300,8 @@ function DashboardPage({ app, navigate }) {
 
           <div className="mini-list">
             {app.loading ? <p className="empty-state">Carregando roupas...</p> : null}
-            {!app.loading && app.recentClothing.length === 0 ? <p className="empty-state">Nenhuma roupa cadastrada.</p> : null}
-            {app.recentClothing.map((item) => (
+            {!app.loading && recentClothing.length === 0 ? <p className="empty-state">Nenhuma roupa cadastrada.</p> : null}
+            {recentClothing.map((item) => (
               <article key={item.id} className="mini-card">
                 <strong>{item.name}</strong>
                 <span>

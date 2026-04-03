@@ -7,7 +7,7 @@ import com.organizare.http.util.HttpExchangeHelper;
 import com.organizare.http.util.JsonUtil;
 import com.organizare.model.Buy;
 import com.organizare.service.BuyService;
-import com.sun.net.httpServer.HttpExchange;
+import com.sun.net.httpserver.HttpExchange;
 
 public class BuyHandler extends BaseHandler {
     private static final String BASE_PATH = "/api/buy";
@@ -25,7 +25,7 @@ public class BuyHandler extends BaseHandler {
 
         if ("GET".equalsIgnoreCase(method) && id == -1) {
             List<Buy> buys = buyService.listAll();
-            HttpExchangeHelper.sendJson(exchange, 200, JsonUtil.buy(buys));
+            HttpExchangeHelper.sendJson(exchange, 200, JsonUtil.buyItems(buys));
             return;
         }
 
@@ -43,7 +43,7 @@ public class BuyHandler extends BaseHandler {
         }
 
         if ("PUT".equalsIgnoreCase(method) && id == -1) {
-            Map<String, String> payload = JsonUtil.parseFlatObject(requiseJsonBody(exchange));
+            Map<String, String> payload = JsonUtil.parseFlatObject(requireJsonBody(exchange));
             Buy updatedBuy = buyService.update(id, payload);
             HttpExchangeHelper.sendJson(exchange, 200, JsonUtil.buy(updatedBuy));
             return;

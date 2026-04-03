@@ -591,6 +591,17 @@ select:hover {
   align-self: end;
 }
 
+.clothing-form-card .clothing-form-select {
+  min-height: 3.35rem;
+  border-radius: 18px;
+  background-color: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
+}
+
+.clothing-form-card .clothing-form-select:hover {
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
 .primary-button,
 .secondary-button,
 .danger-button {
@@ -837,19 +848,19 @@ select:hover {
     min-width: 32rem;
   }
 
-  .form-grid label {
+  label {
     display: flex;
     flex-direction: column;
     width: 100%;
   }
 
-  .form-grid input,
-  .form-grid select {
+  input,
+  select {
     width: 100%;
     min-width: 0;
   }
 
-  .form-grid select:disabled {
+  select:disabled {
     background-color: #eae7e3;
     color: #a8a29b;
     cursor: not-allowed;

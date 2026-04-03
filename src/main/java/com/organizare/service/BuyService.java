@@ -2,16 +2,11 @@ package com.organizare.service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.time.MonthDay;
 import java.util.List;
 import java.util.Map;
 
 import com.organizare.config.DatabaseConfig;
-import com.organizare.exception.ConflictException;
 import com.organizare.exception.NotFoundException;
-import com.organizare.exception.ValidationException;
 import com.organizare.model.Buy;
 import com.organizare.repository.BuyRepository;
 import com.organizare.validation.RequestValidator;
