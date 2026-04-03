@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const allowedRoutes = new Set(['dashboard', 'users', 'clothing']);
+const allowedRoutes = new Set(['dashboard', 'users', 'clothing', 'buy']);
 
 function normalizeHash(hash) {
   const route = hash.replace(/^#\/?/, '').trim().toLowerCase();

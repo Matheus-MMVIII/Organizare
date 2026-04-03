@@ -1,6 +1,7 @@
 import AppLayout from './components/AppLayout';
 import useHashRoute from './hooks/useHashRoute';
 import useOrganizareData from './hooks/useOrganizareData';
+import BuyPage from './pages/BuyPage';
 import ClothingPage from './pages/ClothingPage';
 import DashboardPage from './pages/DashboardPage';
 import UsersPage from './pages/UsersPage';
@@ -15,6 +16,8 @@ function App() {
     page = <UsersPage app={app} />;
   } else if (route === 'clothing') {
     page = <ClothingPage app={app} />;
+  } else if (route === 'buy') {
+    page = <BuyPage app={app} />;
   } else {
     page = <DashboardPage app={app} navigate={navigate} />;
   }

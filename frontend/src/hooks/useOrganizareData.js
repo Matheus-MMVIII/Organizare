@@ -17,11 +17,27 @@ const emptyClothingForm = {
   color: '',
 };
 
+const emptyBuyForm = {
+  userId: '',
+  clothingId: '',
+  quantity: '1',
+};
+
 const initialFeedback = { type: '', message: '' };
 
 function getTimestamp(value) {
   const timestamp = new Date(value ?? '').getTime();
   return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function isInCurrentMonth(value) {
+  const date = new Date(value ?? '');
+  const now = new Date();
+  return (
+    !Number.isNaN(date.getTime()) &&
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth()
+  );
 }
 
 function parseBirthdayInput(value) {
@@ -42,15 +58,18 @@ function parseBirthdayInput(value) {
 function useOrganizareData() {
   const [users, setUsers] = useState([]);
   const [clothing, setClothing] = useState([]);
+  const [buys, setBuys] = useState([]);
   const [userForm, setUserForm] = useState(emptyUserForm);
   const [clothingForm, setClothingForm] = useState(emptyClothingForm);
+  const [buyForm, setBuyForm] = useState(emptyBuyForm);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState({ user: false, clothing: false });
+  const [submitting, setSubmitting] = useState({ user: false, clothing: false, buy: false });
   const [deletingId, setDeletingId] = useState('');
   const [updatingStockId, setUpdatingStockId] = useState('');
   const [feedback, setFeedback] = useState(initialFeedback);
   const [userSearch, setUserSearch] = useState('');
   const [clothingSearch, setClothingSearch] = useState('');
+  const [buySearch, setBuySearch] = useState('');
 
   useEffect(() => {
     void loadDashboard();
@@ -82,9 +101,35 @@ function useOrganizareData() {
     );
   }, [clothingSearch, clothing]);
 
+  const filteredBuys = useMemo(() => {
+    const term = buySearch.trim().toLowerCase();
+    if (!term) {
+      return buys;
+    }
+
+    return buys.filter((buy) =>
+      [buy.userName, buy.clothingName, buy.orderDate, buy.totalPrice, buy.quantity].some((value) =>
+        String(value).toLowerCase().includes(term),
+      ),
+    );
+  }, [buySearch, buys]);
+
   const lowStockCount = useMemo(
     () => clothing.filter((item) => Number(item.stock) <= 5).length,
     [clothing],
+  );
+
+  const totalRevenue = useMemo(
+    () => buys.reduce((sum, buy) => sum + Number(buy.totalPrice || 0), 0),
+    [buys],
+  );
+
+  const currentMonthRevenue = useMemo(
+    () =>
+      buys
+        .filter((buy) => isInCurrentMonth(buy.orderDate))
+        .reduce((sum, buy) => sum + Number(buy.totalPrice || 0), 0),
+    [buys],
   );
 
   const recentUsers = useMemo(
@@ -94,9 +139,18 @@ function useOrganizareData() {
         .slice(0, 4),
     [users],
   );
+
   const recentClothing = useMemo(
     () => [...clothing].sort((firstItem, secondItem) => secondItem.id - firstItem.id).slice(0, 4),
     [clothing],
+  );
+
+  const recentBuys = useMemo(
+    () =>
+      [...buys]
+        .sort((firstBuy, secondBuy) => getTimestamp(secondBuy.orderDate) - getTimestamp(firstBuy.orderDate))
+        .slice(0, 4),
+    [buys],
   );
 
   async function requestJson(path, options = {}) {
@@ -124,20 +178,38 @@ function useOrganizareData() {
   }
 
   async function loadDashboard() {
-    try {
-      setLoading(true);
-      const [usersData, clothingData] = await Promise.all([
-        requestJson('/api/users'),
-        requestJson('/api/clothing'),
-      ]);
+    setLoading(true);
 
-      setUsers(usersData ?? []);
-      setClothing(clothingData ?? []);
-    } catch (error) {
-      setFeedback({ type: 'error', message: error.message });
-    } finally {
-      setLoading(false);
+    const [usersResult, clothingResult, buysResult] = await Promise.allSettled([
+      requestJson('/api/users'),
+      requestJson('/api/clothing'),
+      requestJson('/api/buy'),
+    ]);
+
+    if (usersResult.status === 'fulfilled') {
+      setUsers(usersResult.value ?? []);
     }
+
+    if (clothingResult.status === 'fulfilled') {
+      setClothing(clothingResult.value ?? []);
+    }
+
+    if (buysResult.status === 'fulfilled') {
+      setBuys(buysResult.value ?? []);
+    } else {
+      setBuys([]);
+    }
+
+    const firstError =
+      (usersResult.status === 'rejected' && usersResult.reason) ||
+      (clothingResult.status === 'rejected' && clothingResult.reason) ||
+      (buysResult.status === 'rejected' && buysResult.reason);
+
+    if (firstError) {
+      setFeedback({ type: 'error', message: firstError.message });
+    }
+
+    setLoading(false);
   }
 
   function clearFeedback() {
@@ -152,6 +224,11 @@ function useOrganizareData() {
   function updateClothingField(event) {
     const { name, value } = event.target;
     setClothingForm((current) => ({ ...current, [name]: value }));
+  }
+
+  function updateBuyField(event) {
+    const { name, value } = event.target;
+    setBuyForm((current) => ({ ...current, [name]: value }));
   }
 
   async function createUser(event) {
@@ -210,11 +287,58 @@ function useOrganizareData() {
     }
   }
 
+  async function createBuy(event) {
+    event.preventDefault();
+
+    const userId = Number(buyForm.userId);
+    const clothingId = Number(buyForm.clothingId);
+    const quantity = Number(buyForm.quantity);
+    const selectedClothing = clothing.find((item) => item.id === clothingId);
+
+    if (!userId || !clothingId || !quantity || quantity < 1) {
+      setFeedback({ type: 'error', message: 'Selecione usuario, roupa e quantidade validos.' });
+      return;
+    }
+
+    if (!selectedClothing) {
+      setFeedback({ type: 'error', message: 'Selecione uma roupa existente para registrar a compra.' });
+      return;
+    }
+
+    try {
+      setSubmitting((current) => ({ ...current, buy: true }));
+      const createdBuy = await requestJson('/api/buy', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId,
+          clothingId,
+          quantity,
+        }),
+      });
+
+      setBuys((current) => [createdBuy, ...current]);
+      setClothing((current) =>
+        current.map((item) =>
+          item.id === clothingId
+            ? { ...item, stock: Math.max(0, Number(item.stock) - quantity) }
+            : item,
+        ),
+      );
+      setBuyForm(emptyBuyForm);
+      setFeedback({ type: 'success', message: 'Compra registrada com sucesso.' });
+    } catch (error) {
+      setFeedback({ type: 'error', message: error.message });
+    } finally {
+      setSubmitting((current) => ({ ...current, buy: false }));
+    }
+  }
+
   async function deleteUser(id) {
     try {
       setDeletingId(`user-${id}`);
       await requestJson(`/api/users/${id}`, { method: 'DELETE' });
       setUsers((current) => current.filter((user) => user.id !== id));
+      setBuys((current) => current.filter((buy) => buy.userId !== id));
       setFeedback({ type: 'success', message: 'Usuario removido com sucesso.' });
     } catch (error) {
       setFeedback({ type: 'error', message: error.message });
@@ -228,7 +352,34 @@ function useOrganizareData() {
       setDeletingId(`clothing-${id}`);
       await requestJson(`/api/clothing/${id}`, { method: 'DELETE' });
       setClothing((current) => current.filter((item) => item.id !== id));
+      setBuys((current) => current.filter((buy) => buy.clothingId !== id));
       setFeedback({ type: 'success', message: 'Roupa removida com sucesso.' });
+    } catch (error) {
+      setFeedback({ type: 'error', message: error.message });
+    } finally {
+      setDeletingId('');
+    }
+  }
+
+  async function deleteBuy(id) {
+    const removedBuy = buys.find((buy) => buy.id === id);
+
+    try {
+      setDeletingId(`buy-${id}`);
+      await requestJson(`/api/buy/${id}`, { method: 'DELETE' });
+      setBuys((current) => current.filter((buy) => buy.id !== id));
+
+      if (removedBuy) {
+        setClothing((current) =>
+          current.map((item) =>
+            item.id === removedBuy.clothingId
+              ? { ...item, stock: Number(item.stock) + Number(removedBuy.quantity) }
+              : item,
+          ),
+        );
+      }
+
+      setFeedback({ type: 'success', message: 'Compra removida com sucesso.' });
     } catch (error) {
       setFeedback({ type: 'error', message: error.message });
     } finally {
@@ -266,27 +417,38 @@ function useOrganizareData() {
   }
 
   return {
+    buys,
+    buyForm,
+    buySearch,
     clothing,
     clothingForm,
     clothingSearch,
+    createBuy,
     createClothing,
     createUser,
+    currentMonthRevenue,
     updateClothingStock,
+    deleteBuy,
     deleteClothing,
     deleteUser,
     deletingId,
     feedback,
+    filteredBuys,
     filteredClothing,
     filteredUsers,
     loadDashboard,
     loading,
     lowStockCount,
+    recentBuys,
     recentClothing,
     recentUsers,
+    setBuySearch,
     setClothingSearch,
     setUserSearch,
     submitting,
+    totalRevenue,
     updatingStockId,
+    updateBuyField,
     updateClothingField,
     updateUserField,
     userForm,

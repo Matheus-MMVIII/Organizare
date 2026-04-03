@@ -332,7 +332,7 @@ select:hover {
 }
 
 .stats-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .stat-card {
@@ -372,7 +372,10 @@ select:hover {
   gap: 1rem;
 }
 
-.dashboard-grid,
+.dashboard-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .page-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -602,6 +605,27 @@ select:hover {
   background-color: rgba(255, 255, 255, 0.92);
 }
 
+.buy-summary {
+  display: grid;
+  gap: 0.35rem;
+  align-content: center;
+  padding: 1rem 1.1rem;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(18, 91, 80, 0.1);
+}
+
+.buy-summary strong {
+  font-size: 1.5rem;
+  color: var(--primary-strong);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.buy-summary p {
+  margin: 0;
+  color: var(--muted);
+}
+
 .primary-button,
 .secondary-button,
 .danger-button {
@@ -780,6 +804,10 @@ select:hover {
 
 .clothing-card {
   border-left: 4px solid rgba(221, 107, 66, 0.46);
+}
+
+.buy-card {
+  border-left: 4px solid rgba(18, 91, 80, 0.42);
 }
 
 .mini-card strong {
