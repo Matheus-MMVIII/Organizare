@@ -15,16 +15,21 @@ public class CellPhone {
     }
 
     private boolean isValidCellPhone(String cellPhone) {
-        return cellPhone != null && cellPhone.matches(
-                "(\\d{2}\\s?9?\\s?\\d{4}[\\s-]?\\d{4})" + // 11 9 9999 9999 / 11 9999-9999
-                        "|(\\d{2}\\s?9?\\s?\\d{5}[\\s-]?\\d{4})" + // 11 9 99999 9999
-                        "|(\\(\\d{2}\\)\\s?9?\\s?\\d{4,5}[\\s-]?\\d{4})" + // (11) 9 9999 9999
-                        "|(\\d{10,11})" // 11999999999
-        );// "\\(\\d{2}\\)\\s\\d{5}-\\d{4}");
+        if (cellPhone == null) {
+            return false;
+        }
+
+        String trimmedCellPhone = cellPhone.trim();
+        if (!trimmedCellPhone.matches("^\\+?[0-9()\\-\\s]{10,24}$")) {
+            return false;
+        }
+
+        String localDigits = extractLocalDigits(trimmedCellPhone);
+        return localDigits.length() == 10 || localDigits.length() == 11;
     }
 
     private String formatCellPhone(String cellPhone) {
-        String digits = cellPhone.replaceAll("\\D", "");
+        String digits = extractLocalDigits(cellPhone);
         if (digits.length() == 10) {
             return String.format("(%s) %s-%s",
                     digits.substring(0, 2),
@@ -37,5 +42,13 @@ public class CellPhone {
                     digits.substring(7));
         }
         return cellPhone;
+    }
+
+    private String extractLocalDigits(String cellPhone) {
+        String digits = cellPhone.replaceAll("\\D", "");
+        if (digits.startsWith("55") && (digits.length() == 12 || digits.length() == 13)) {
+            return digits.substring(2);
+        }
+        return digits;
     }
 }
