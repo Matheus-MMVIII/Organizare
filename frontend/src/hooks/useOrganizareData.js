@@ -13,8 +13,8 @@ const emptyClothingForm = {
   name: '',
   price: '',
   stock: '',
-  size: '',
-  color: '',
+  size: 'PP',
+  color: 'Branco',
 };
 
 const emptyBuyForm = {

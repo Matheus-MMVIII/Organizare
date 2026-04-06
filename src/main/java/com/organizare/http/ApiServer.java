@@ -6,7 +6,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.organizare.config.AppConfig;
-import com.organizare.config.DatabaseMigration;
 import com.organizare.http.handler.ClothingHandler;
 import com.organizare.http.handler.HealthHandler;
 import com.organizare.http.handler.UserHandler;
@@ -49,8 +48,6 @@ public class ApiServer {
     // Cria as dependencias principais e associa cada rota ao seu respectivo
     // handler.
     private void registerContexts() {
-        DatabaseMigration.ensureUserCreatedAtColumn();
-        DatabaseMigration.ensureOrdersTable();
 
         UserRepository userRepository = new UserRepository();
         ClothingRepository clothingRepository = new ClothingRepository();
