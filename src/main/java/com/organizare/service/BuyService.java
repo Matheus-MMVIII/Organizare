@@ -23,7 +23,8 @@ public class BuyService {
     private final UserRepository userRepository;
     private final ClothingRepository clothingRepository;
 
-    public BuyService(BuyRepository buyRepository, UserRepository userRepository, ClothingRepository clothingRepository) {
+    public BuyService(BuyRepository buyRepository, UserRepository userRepository,
+            ClothingRepository clothingRepository) {
         this.buyRepository = buyRepository;
         this.userRepository = userRepository;
         this.clothingRepository = clothingRepository;
@@ -57,7 +58,8 @@ public class BuyService {
                 persistClothingStock(connection, clothing, clothing.getStock() - quantity);
 
                 double totalPrice = calculateTotalPrice(clothing.getPrice(), quantity);
-                Buy insertedBuy = buyRepository.insert(connection, new Buy(0, user.getId(), clothing.getId(), quantity, totalPrice));
+                Buy insertedBuy = buyRepository.insert(connection,
+                        new Buy(0, user.getId(), clothing.getId(), quantity, totalPrice));
                 Buy createdBuy = buyRepository.findById(connection, insertedBuy.getId())
                         .orElseThrow(() -> new NotFoundException("Compra não encontrada após o cadastro."));
                 connection.commit();
@@ -79,13 +81,15 @@ public class BuyService {
         try (Connection connection = DatabaseConfig.getConnection()) {
             connection.setAutoCommit(false);
             try {
-                Buy existingBuy = buyRepository.findById(connection, id)
+                Buy existingBuy = buyRepository.findByIdForUpdate(connection, id)
                         .orElseThrow(() -> new NotFoundException("Compra nao encontrada."));
 
                 requireUser(connection, userId);
 
-                Clothing previousClothing = requireClothing(connection, existingBuy.getClothingId());
-                Clothing nextClothing = requireClothing(connection, clothingId);
+                LockedClothingPair lockedClothing = lockAffectedClothing(connection, existingBuy.getClothingId(),
+                        clothingId);
+                Clothing previousClothing = lockedClothing.previousClothing();
+                Clothing nextClothing = lockedClothing.nextClothing();
                 int availableStock = nextClothing.getId() == previousClothing.getId()
                         ? nextClothing.getStock() + existingBuy.getQuantity()
                         : nextClothing.getStock();
@@ -94,7 +98,8 @@ public class BuyService {
                     throw new ConflictException("Estoque insuficiente para concluir a compra.");
                 }
 
-                persistClothingStock(connection, previousClothing, previousClothing.getStock() + existingBuy.getQuantity());
+                persistClothingStock(connection, previousClothing,
+                        previousClothing.getStock() + existingBuy.getQuantity());
                 persistClothingStock(connection, nextClothing, availableStock - quantity);
 
                 double totalPrice = calculateTotalPrice(nextClothing.getPrice(), quantity);
@@ -118,7 +123,7 @@ public class BuyService {
         try (Connection connection = DatabaseConfig.getConnection()) {
             connection.setAutoCommit(false);
             try {
-                Buy existingBuy = buyRepository.findById(connection, id)
+                Buy existingBuy = buyRepository.findByIdForUpdate(connection, id)
                         .orElseThrow(() -> new NotFoundException("Compra nao encontrada."));
                 Clothing clothing = requireClothing(connection, existingBuy.getClothingId());
 
@@ -152,8 +157,27 @@ public class BuyService {
     }
 
     private Clothing requireClothing(Connection connection, int clothingId) throws SQLException {
-        return clothingRepository.findById(connection, clothingId)
+        return clothingRepository.findByIdForUpdate(connection, clothingId)
                 .orElseThrow(() -> new NotFoundException("Roupa da compra nao encontrada."));
+    }
+
+    // Bloqueia as roupas em ordem crescente de ID para evitar deadlock quando duas
+    // transacoes alteram compras cruzadas ao mesmo tempo.
+    private LockedClothingPair lockAffectedClothing(Connection connection, int previousClothingId, int nextClothingId)
+            throws SQLException {
+        if (previousClothingId == nextClothingId) {
+            Clothing clothing = requireClothing(connection, previousClothingId);
+            return new LockedClothingPair(clothing, clothing);
+        }
+
+        int firstId = Math.min(previousClothingId, nextClothingId);
+        int secondId = Math.max(previousClothingId, nextClothingId);
+        Clothing firstLocked = requireClothing(connection, firstId);
+        Clothing secondLocked = requireClothing(connection, secondId);
+
+        Clothing previousClothing = previousClothingId == firstId ? firstLocked : secondLocked;
+        Clothing nextClothing = nextClothingId == firstId ? firstLocked : secondLocked;
+        return new LockedClothingPair(previousClothing, nextClothing);
     }
 
     private void ensureStock(Clothing clothing, int quantity) {
@@ -175,4 +199,21 @@ public class BuyService {
                         clothing.getSizeAsString(), clothing.getColor()));
     }
 
+    private static final class LockedClothingPair {
+        private final Clothing previousClothing;
+        private final Clothing nextClothing;
+
+        private LockedClothingPair(Clothing previousClothing, Clothing nextClothing) {
+            this.previousClothing = previousClothing;
+            this.nextClothing = nextClothing;
+        }
+
+        private Clothing previousClothing() {
+            return previousClothing;
+        }
+
+        private Clothing nextClothing() {
+            return nextClothing;
+        }
+    }
 }

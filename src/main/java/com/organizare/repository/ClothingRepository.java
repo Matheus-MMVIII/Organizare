@@ -51,6 +51,19 @@ public class ClothingRepository {
         }
     }
 
+    public Optional<Clothing> findByIdForUpdate(Connection connection, int clothingId) throws SQLException {
+        String sql = "SELECT * FROM clothing WHERE id = ? FOR UPDATE";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, clothingId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapRow(resultSet));
+                }
+                return Optional.empty();
+            }
+        }
+    }
+
     // Atualiza os dados de uma roupa existente e retorna a propria entidade
     public Clothing update(Connection connection, Clothing clothing) throws SQLException {
         String sql = "UPDATE clothing SET name = ?, price = ?, stock = ?, size = ?, color = ? WHERE id = ?";

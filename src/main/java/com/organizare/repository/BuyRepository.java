@@ -47,6 +47,20 @@ public class BuyRepository {
         }
     }
 
+    public Optional<Buy> findByIdForUpdate(Connection connection, int buyId) throws SQLException {
+        String sql = "SELECT id, user_id, clothing_id, quantity, total_price, order_date "
+                + "FROM orders WHERE id = ? FOR UPDATE";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, buyId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapRow(resultSet));
+                }
+                return Optional.empty();
+            }
+        }
+    }
+
     public Buy update(Connection connection, Buy buy) throws SQLException {
         String sql = "UPDATE orders SET user_id = ?, clothing_id = ?, quantity = ?, total_price = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
