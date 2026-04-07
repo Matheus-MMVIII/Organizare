@@ -16,7 +16,6 @@ RUN apk add --no-cache wget
 
 COPY --from=build /app/bin ./bin
 COPY --from=build /app/lib ./lib
-COPY .env ./.env
 
 EXPOSE 8080
 

@@ -16,14 +16,20 @@ Projeto Java puro com API HTTP para cadastro de usuarios e produtos de roupa com
 ## Variaveis de ambiente
 
 - `PORT`: porta do servidor HTTP. Padrao `8080`
+- `APP_PORT`: porta exposta pelo container da aplicacao. Padrao `8080`
 - `ALLOWED_ORIGIN`: origem liberada para o frontend React. Padrao `http://localhost:5173`
 - `MAX_REQUEST_BODY_BYTES`: limite do corpo JSON. Padrao `8192`
 - `SERVER_BACKLOG`: fila maxima basica do servidor HTTP
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_PORT`
 - `DB_URL`
 - `DB_USER`
 - `DB_PASSWORD`
 
 A aplicacao tenta ler primeiro as variaveis do sistema e, se elas nao existirem, usa o arquivo local `.env`.
+No Docker Compose, os valores padrao tambem podem vir do arquivo `.env`, mas o projeto consegue subir usando os fallbacks definidos em `docker-compose.yml`.
 
 Configuracao padrao deste projeto:
 
@@ -45,6 +51,22 @@ Inicie a API:
 ```bash
 java -cp "lib/postgresql-42.7.3.jar:bin" com.organizare.App
 ```
+
+### Docker Compose
+
+Para subir API + PostgreSQL com os valores padrao:
+
+```bash
+docker compose up --build
+```
+
+Para derrubar os containers:
+
+```bash
+docker compose down
+```
+
+A API fica disponivel em `http://localhost:8080` por padrao e o healthcheck interno usa `http://127.0.0.1:8080/health`.
 
 ### Frontend React
 
@@ -90,6 +112,11 @@ npm run build
 - `POST /api/clothing`
 - `PUT /api/clothing/{id}`
 - `DELETE /api/clothing/{id}`
+- `GET /api/buy`
+- `GET /api/buy/{id}`
+- `POST /api/buy`
+- `PUT /api/buy/{id}`
+- `DELETE /api/buy/{id}`
 
 ## Seguranca e endurecimento aplicados
 
@@ -124,5 +151,15 @@ npm run build
   "stock": 12,
   "size": "M",
   "color": "Azul"
+}
+```
+
+`POST /api/buy`
+
+```json
+{
+  "userId": 1,
+  "clothingId": 2,
+  "quantity": 3
 }
 ```
